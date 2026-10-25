@@ -24,6 +24,7 @@ import httpx
 import numpy as np
 
 from .belief import Calibrator, JudgeWeights, log_pool
+from .mechanism import NEW
 from .model import Judgment, Option, Problem
 from .simplex import Vec, cyclic_orbit, relabel, reversal_orbit
 
@@ -158,6 +159,21 @@ def build_questions(problem: Problem) -> tuple[Questions, dict[str, list[Present
         crit = {**problem.niches, OTHER: "None of the other approach types fits"}
         ask = "Which type of approach does `option` mainly take?"
         orbits["niche"] = _choice_orbit("niche", ask, crit, qs)
+    for f in problem.morphology.functions if problem.morphology else []:
+        crit = {**f.principles, NEW: "A working principle not described in any other answer"}
+        ask = (
+            f"Which working principle does `option` rely on to {f.description}? Judge how it "
+            "would actually work, not how it is described or what it is called."
+        )
+        orbits[f"mech:{f.id}"] = _choice_orbit(f"mech:{f.id}", ask, crit, qs)
+        qs[f"risk:{f.id}"] = {
+            "type": "noul",
+            "instructions": (
+                f"In the setting described by `goal` and `context`, would the way `option` "
+                f"tries to {f.description} fail to work in practice?"
+            ),
+            "criteria": {"true": "Yes, that part would not work", "false": "No, it would work"},
+        }
     return qs, orbits
 
 
@@ -205,7 +221,13 @@ def fuse(
     niche: dict[str, float] = {}
     if problem.niches:
         niche = dict(zip(orbits["niche"][0].labels, map(float, belief("niche")), strict=True))
-    return Judgment(option, dims, violations, belief("novelty"), niche)
+    mechanism: dict[str, Vec] = {}
+    risk: dict[str, float] = {}
+    for f in problem.morphology.functions if problem.morphology else []:
+        mechanism[f.id] = belief(f"mech:{f.id}")
+        ps = [cal.noul(float(a[f"risk:{f.id}"]["noul"])) for a in answers]
+        risk[f.id] = float(log_pool([np.array([1 - p, p]) for p in ps], weights)[1])
+    return Judgment(option, dims, violations, belief("novelty"), niche, mechanism, risk)
 
 
 async def judge_problem(

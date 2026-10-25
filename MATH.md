@@ -112,7 +112,35 @@ Named creative behaviours (*scenario*):
 - **No baseline** falls back to ∅, "do nothing".
 - **The portfolio** keeps one elite per niche.
 
-## 4. Functional (`test_functional.py`, `test_contracts.py`)
+## 4. Mechanism layer: creative engineering (`mechanism.py`)
+
+An option is described by the functions it must perform and the working principle it uses for
+each (a morphological chart). A judge classifies each option per function over the catalogue
+plus NEW (Choice, cyclic orbit) and estimates r_{i,f} = P(that part fails here) (Noul).
+
+```
+N_f(p) = 1 − min(1, c_{f,p}/m_f)    N_f(NEW) = 1      m_f = 1 by default; m_f = C_f is Shah's rarity
+ν_i    = Σ_f w̄_f Σ_p π_{i,f}(p) N_f(p)                mechanism novelty (replaces the judged Score)
+κ_i    = 1 − Σ_{r ∈ R*} Π_f π_{i,f}(r_f)              P(the combination is in no precedent)
+θ̄      = evidence Beta mean | 1 if a precedent used p here (settled) | Beta(s₀(1−r), s₀r) (opinion)
+q_mech = 1 − Π_f Σ_p π_{i,f}(p) θ̄_{i,f,p}             one more hard check: unproven → prototype test
+Λ_i    = Σ_f Σ_p π_{i,f}(p) θ̄(1−θ̄)/(n+1)              innovation slot ranks by EI + w·Λ
+```
+
+| # | claim | test |
+|---|---|---|
+| M1 | ν, κ ∈ [0,1]; ν is affine in π; moving mass to a rarer principle never lowers ν; ν depends only on π (rewording-invariant) | `test_m1_*` |
+| M2 | a new precedent using p never raises N_f(p) and never lowers any other N (for every m_f, including Shah's) | `test_m2_*` |
+| M3 | q_mech ∈ [0,1], non-decreasing in r, non-increasing in θ̄ | `test_m3_*` |
+| M4 | test updates: conjugate for s = c = 1; the moment-matched Beta has the exact posterior mean and variance; an uninformative test (s + c = 1) changes nothing; P(pass) = θ̄c + (1−θ̄)(1−s); evidence on one principle changes every option that uses it | `test_m4_*` |
+| M5 | one perfect test adds at most α θ̄(1−θ̄)/(n+1) to a later decision, attained at t = θ̄, and nothing unless t ∈ (a/(n+1), (a+1)/(n+1)); ignorance vs a known coin: 101/3 | `test_m5_*` |
+| P5′ | the learning bonus w·Λ, like novelty, only moves the innovation slot | `test_learning_weight_only_moves_the_innovation_slot` |
+
+Scenarios: an untested principle goes to **verify** (prototype), not reject; a reworded precedent
+has ν = 0, is clear, and cannot take the innovation slot; `apply_mechanism` is idempotent and
+settles the status quo.
+
+## 5. Functional (`test_functional.py`, `test_contracts.py`)
 
 - **HTTP contract** (`httpx.MockTransport`): request shape, bearer auth, retries on 429/529,
   surfacing 5xx errors, an error when answers are missing, refusal to start without a key.
@@ -137,6 +165,9 @@ Named creative behaviours (*scenario*):
    content is only reduced, not removed.
 4. **Point estimates of q.** For one decision this is enough: the value of a check depends on
    the belief about q only through its mean. The shape of the belief matters for learning across
-   similar options, which v0.2.0 does not do.
+   similar options; the mechanism layer keeps it per working principle (M4, M5).
 5. **Calibration priors** (T = 1.3 / 1.3 / 0.9) come from one audit. Refit them with
    `Calibrator.fit` on your own outcomes.
+6. **Mechanisms.** Classifications are independent across functions, and principles do not
+   interact (two that work alone also work together). The catalogue is written by people; a
+   principle the judge files under NEW carries no shared evidence until it is catalogued.

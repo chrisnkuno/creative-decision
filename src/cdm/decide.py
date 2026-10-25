@@ -61,14 +61,21 @@ Axioms the policy satisfies (tests/test_behaviour.py):
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 
 from .lottery import TIE_TOL, Competitor, Lottery, expected_improvement, expected_max, p_best
-from .model import Judgment, Problem
+from .mechanism import mechanism_summary
+from .model import Constraint, Judgment, Problem
 
 NULL_BASELINE = "∅"
+MECHANISM = Constraint(
+    "mechanism",
+    "fail to work as described, because one of its working principles does not perform its "
+    "function in this setting",
+    hard=True,
+)
 
 
 @dataclass(frozen=True)
@@ -86,6 +93,7 @@ class Policy:
     check_cost: float = 0.0  # k, utility charged to every verify option
     harm_value: float = 0.0  # H, utility of an undetected hard violation
     hard_dependence: str = "independent"  # or "robust": worst E[U] over the Fréchet interval
+    learning_weight: float = 0.0  # utility per unit change in θ, summed over later uses (M5)
 
     def __post_init__(self) -> None:
         if not 0 <= self.clear_below <= self.reject_above <= 1:
@@ -96,6 +104,8 @@ class Policy:
             raise ValueError("check sensitivity and specificity must be in [0,1]")
         if self.check_cost < 0 or self.hard_dependence not in {"independent", "robust"}:
             raise ValueError("check_cost ≥ 0; hard_dependence is 'independent' or 'robust'")
+        if self.learning_weight < 0:
+            raise ValueError("learning_weight ≥ 0")
 
 
 @dataclass
@@ -117,6 +127,8 @@ class OptionStats:
     ei: float = 0.0
     reliable: bool = False
     baseline: bool = False
+    combination: float = 0.0  # κ: P(the combination of principles is in no precedent)
+    learning: float = 0.0
 
 
 @dataclass
@@ -210,8 +222,41 @@ def _argmax(idx: list[int], key: Callable[[int], float], ids: list[str], base: i
     return min(near, key=lambda i: (i != base, ids[i]))
 
 
+def apply_mechanism(problem: Problem, judgments: list[Judgment]) -> tuple[Problem, list[Judgment]]:
+    """Mechanism layer → policy: ν replaces the judged novelty, q^mech becomes a hard check.
+
+    The status quo's mechanism is settled (q^mech = 0, ν = 0). Idempotent.
+    """
+    morph = problem.morphology
+    if morph is None:
+        return problem, judgments
+    cons = list(problem.constraints)
+    if all(c.id != MECHANISM.id for c in cons):
+        cons.append(MECHANISM)
+    out = []
+    for j in judgments:
+        if j.option.baseline:
+            settled = {**j.violations, MECHANISM.id: 0.0}
+            out.append(replace(j, violations=settled, mechanism_novelty=0.0, learning=0.0))
+            continue
+        if set(j.mechanism) != {f.id for f in morph.functions}:
+            raise ValueError(f"{j.option.id}: needs a classification for every function")
+        nov, comb, q, learn = mechanism_summary(morph, j.mechanism, j.mechanism_risk)
+        out.append(
+            replace(
+                j,
+                violations={**j.violations, MECHANISM.id: q},
+                mechanism_novelty=nov,
+                combination=comb,
+                learning=learn,
+            )
+        )
+    return replace(problem, constraints=cons), out
+
+
 def decide(problem: Problem, judgments: list[Judgment], policy: Policy | None = None) -> Decision:
     pol = policy or Policy()
+    problem, judgments = apply_mechanism(problem, judgments)
     if len({j.option.id for j in judgments}) != len(judgments):
         raise ValueError("option ids must be unique")
     if sum(j.option.baseline for j in judgments) > 1:
@@ -259,7 +304,9 @@ def decide(problem: Problem, judgments: list[Judgment], policy: Policy | None = 
                 mean=u.mean(),
                 std=u.std(),
                 cvar=u.cvar(pol.alpha),
-                novelty=_novelty(j.novelty),
+                novelty=_novelty(j.novelty) if j.mechanism_novelty is None else j.mechanism_novelty,
+                combination=j.combination,
+                learning=j.learning,
                 niche=_niche(j),
                 status=status,
                 checks=checks,
@@ -288,7 +335,9 @@ def decide(problem: Problem, judgments: list[Judgment], policy: Policy | None = 
     if commit is None:  # unreachable by P1: the baseline is always reliable
         raise RuntimeError("no reliable option; the baseline invariant is broken")
     novel = [i for i in rel if stats[i].novelty >= pol.min_novelty and i != commit]
-    innovation = _argmax(novel, lambda i: stats[i].ei, ids, base_i)
+    innovation = _argmax(
+        novel, lambda i: stats[i].ei + pol.learning_weight * stats[i].learning, ids, base_i
+    )
 
     elites: dict[str, int] = {}
     for i in rel:

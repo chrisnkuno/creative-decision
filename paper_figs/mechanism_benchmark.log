@@ -1,0 +1,60 @@
+  B=0.65 ε=0.05 T=24: 100/300 runs
+  B=0.5 ε=0.05 T=24: 100/300 runs
+  B=0.65 ε=0.2 T=24: 100/300 runs
+  B=0.5 ε=0.2 T=24: 100/300 runs
+  B=0.65 ε=0.05 T=24: 200/300 runs
+  B=0.65 ε=0.05 T=48: 100/300 runs
+  B=0.5 ε=0.05 T=24: 200/300 runs
+  B=0.65 ε=0.2 T=24: 200/300 runs
+  B=0.5 ε=0.2 T=24: 200/300 runs
+  B=0.65 ε=0.2 T=24: 300/300 runs
+  B=0.5 ε=0.05 T=24: 300/300 runs
+  B=0.65 ε=0.05 T=24: 300/300 runs
+  B=0.5 ε=0.2 T=24: 300/300 runs
+  B=0.65 ε=0.05 T=48: 200/300 runs
+  B=0.65 ε=0.05 T=48: 300/300 runs
+
+== status quo 0.5, pilot share 0.2, T = 24
+veto untested principles         regret 0.0542±0.0019 first8 0.0524 last8 0.0547 harm 0.041 good 0.01 bad 0.01 innov 0.00 gain -0.0175 [-0.0207,-0.0144] vs commit-only -0.0282 [-0.0317,-0.0248]
+commit only, learning            regret 0.0260±0.0007 first8 0.0289 last8 0.0238 harm 0.058 good 0.27 bad 0.12 innov 0.00 gain +0.0107 [+0.0096,+0.0118] vs commit-only +0.0000 [+0.0000,+0.0000]
+judged novelty, no learning      regret 0.0376±0.0008 first8 0.0372 last8 0.0375 harm 0.064 good 0.22 bad 0.26 innov 0.91 gain -0.0009 [-0.0011,-0.0007] vs commit-only -0.0116 [-0.0127,-0.0105]
+mechanism novelty, no learning   regret 0.0367±0.0008 first8 0.0362 last8 0.0366 harm 0.063 good 0.22 bad 0.26 innov 0.98 gain +0.0000 [+0.0000,+0.0000] vs commit-only -0.0107 [-0.0118,-0.0096]
+mechanism novelty + learning     regret 0.0293±0.0007 first8 0.0316 last8 0.0282 harm 0.055 good 0.27 bad 0.07 innov 0.90 gain +0.0073 [+0.0062,+0.0084] vs commit-only -0.0034 [-0.0043,-0.0025]
++ learning bonus (w = 1)         regret 0.0296±0.0006 first8 0.0323 last8 0.0276 harm 0.055 good 0.27 bad 0.07 innov 0.89 gain +0.0071 [+0.0060,+0.0082] vs commit-only -0.0036 [-0.0045,-0.0027]
++ learning bonus (w = 4)         regret 0.0305±0.0007 first8 0.0331 last8 0.0285 harm 0.055 good 0.27 bad 0.07 innov 0.89 gain +0.0061 [+0.0050,+0.0073] vs commit-only -0.0046 [-0.0055,-0.0037]
+
+== status quo 0.5, pilot share 0.05, T = 24
+veto untested principles         regret 0.0542±0.0019 first8 0.0524 last8 0.0547 harm 0.041 good 0.01 bad 0.01 innov 0.00 gain -0.0211 [-0.0244,-0.0177] vs commit-only -0.0282 [-0.0317,-0.0248]
+commit only, learning            regret 0.0260±0.0007 first8 0.0289 last8 0.0238 harm 0.058 good 0.27 bad 0.12 innov 0.00 gain +0.0072 [+0.0061,+0.0083] vs commit-only +0.0000 [+0.0000,+0.0000]
+judged novelty, no learning      regret 0.0334±0.0009 first8 0.0332 last8 0.0333 harm 0.064 good 0.22 bad 0.26 innov 0.91 gain -0.0002 [-0.0003,-0.0002] vs commit-only -0.0074 [-0.0085,-0.0063]
+mechanism novelty, no learning   regret 0.0331±0.0009 first8 0.0329 last8 0.0331 harm 0.064 good 0.22 bad 0.26 innov 0.98 gain +0.0000 [+0.0000,+0.0000] vs commit-only -0.0072 [-0.0083,-0.0061]
+mechanism novelty + learning     regret 0.0250±0.0007 first8 0.0277 last8 0.0239 harm 0.056 good 0.27 bad 0.07 innov 0.90 gain +0.0081 [+0.0068,+0.0094] vs commit-only +0.0009 [+0.0001,+0.0018]
++ learning bonus (w = 1)         regret 0.0246±0.0007 first8 0.0275 last8 0.0228 harm 0.055 good 0.27 bad 0.07 innov 0.89 gain +0.0086 [+0.0073,+0.0098] vs commit-only +0.0014 [+0.0006,+0.0022]
++ learning bonus (w = 4)         regret 0.0248±0.0007 first8 0.0275 last8 0.0230 harm 0.055 good 0.27 bad 0.07 innov 0.89 gain +0.0084 [+0.0070,+0.0097] vs commit-only +0.0012 [+0.0003,+0.0020]
+
+== status quo 0.65, pilot share 0.2, T = 24
+veto untested principles         regret 0.0091±0.0007 first8 0.0092 last8 0.0088 harm 0.006 good 0.00 bad 0.00 innov 0.00 gain +0.0113 [+0.0103,+0.0122] vs commit-only -0.0006 [-0.0015,+0.0002]
+commit only, learning            regret 0.0084±0.0006 first8 0.0100 last8 0.0074 harm 0.013 good 0.08 bad 0.03 innov 0.00 gain +0.0119 [+0.0113,+0.0125] vs commit-only +0.0000 [+0.0000,+0.0000]
+judged novelty, no learning      regret 0.0203±0.0005 first8 0.0206 last8 0.0202 harm 0.024 good 0.06 bad 0.06 innov 0.90 gain +0.0000 [-0.0001,+0.0002] vs commit-only -0.0119 [-0.0124,-0.0113]
+mechanism novelty, no learning   regret 0.0203±0.0005 first8 0.0206 last8 0.0201 harm 0.024 good 0.06 bad 0.06 innov 0.96 gain +0.0000 [+0.0000,+0.0000] vs commit-only -0.0119 [-0.0125,-0.0113]
+mechanism novelty + learning     regret 0.0179±0.0004 first8 0.0192 last8 0.0170 harm 0.019 good 0.10 bad 0.01 innov 0.91 gain +0.0025 [+0.0019,+0.0030] vs commit-only -0.0094 [-0.0100,-0.0088]
++ learning bonus (w = 1)         regret 0.0186±0.0004 first8 0.0200 last8 0.0176 harm 0.020 good 0.11 bad 0.01 innov 0.90 gain +0.0018 [+0.0012,+0.0023] vs commit-only -0.0101 [-0.0107,-0.0095]
++ learning bonus (w = 4)         regret 0.0195±0.0004 first8 0.0209 last8 0.0184 harm 0.020 good 0.10 bad 0.01 innov 0.90 gain +0.0008 [+0.0002,+0.0014] vs commit-only -0.0111 [-0.0117,-0.0105]
+
+== status quo 0.65, pilot share 0.05, T = 24
+veto untested principles         regret 0.0091±0.0007 first8 0.0092 last8 0.0088 harm 0.006 good 0.00 bad 0.00 innov 0.00 gain +0.0038 [+0.0029,+0.0047] vs commit-only -0.0006 [-0.0015,+0.0002]
+commit only, learning            regret 0.0084±0.0006 first8 0.0100 last8 0.0074 harm 0.013 good 0.08 bad 0.03 innov 0.00 gain +0.0044 [+0.0039,+0.0050] vs commit-only +0.0000 [+0.0000,+0.0000]
+judged novelty, no learning      regret 0.0129±0.0006 first8 0.0132 last8 0.0127 harm 0.017 good 0.06 bad 0.06 innov 0.90 gain +0.0000 [-0.0000,+0.0000] vs commit-only -0.0044 [-0.0050,-0.0039]
+mechanism novelty, no learning   regret 0.0129±0.0006 first8 0.0132 last8 0.0127 harm 0.017 good 0.06 bad 0.06 innov 0.96 gain +0.0000 [+0.0000,+0.0000] vs commit-only -0.0044 [-0.0050,-0.0039]
+mechanism novelty + learning     regret 0.0100±0.0005 first8 0.0114 last8 0.0092 harm 0.014 good 0.10 bad 0.01 innov 0.91 gain +0.0029 [+0.0023,+0.0036] vs commit-only -0.0015 [-0.0020,-0.0011]
++ learning bonus (w = 1)         regret 0.0100±0.0005 first8 0.0114 last8 0.0092 harm 0.014 good 0.11 bad 0.01 innov 0.90 gain +0.0029 [+0.0023,+0.0036] vs commit-only -0.0015 [-0.0020,-0.0011]
++ learning bonus (w = 4)         regret 0.0103±0.0005 first8 0.0117 last8 0.0093 harm 0.014 good 0.10 bad 0.01 innov 0.90 gain +0.0026 [+0.0020,+0.0033] vs commit-only -0.0018 [-0.0023,-0.0014]
+
+== status quo 0.65, pilot share 0.05, T = 48
+veto untested principles         regret 0.0083±0.0006 first8 0.0097 last8 0.0088 harm 0.006 good 0.00 bad 0.00 innov 0.00 gain +0.0042 [+0.0033,+0.0051] vs commit-only -0.0008 [-0.0016,-0.0000]
+commit only, learning            regret 0.0074±0.0004 first8 0.0098 last8 0.0069 harm 0.012 good 0.08 bad 0.02 innov 0.00 gain +0.0050 [+0.0046,+0.0055] vs commit-only +0.0000 [+0.0000,+0.0000]
+judged novelty, no learning      regret 0.0124±0.0005 first8 0.0136 last8 0.0124 harm 0.017 good 0.05 bad 0.06 innov 0.89 gain +0.0000 [-0.0000,+0.0001] vs commit-only -0.0050 [-0.0055,-0.0045]
+mechanism novelty, no learning   regret 0.0124±0.0005 first8 0.0136 last8 0.0125 harm 0.017 good 0.05 bad 0.06 innov 0.96 gain +0.0000 [+0.0000,+0.0000] vs commit-only -0.0050 [-0.0055,-0.0046]
+mechanism novelty + learning     regret 0.0085±0.0003 first8 0.0114 last8 0.0079 harm 0.013 good 0.11 bad 0.01 innov 0.84 gain +0.0039 [+0.0033,+0.0046] vs commit-only -0.0011 [-0.0015,-0.0007]
++ learning bonus (w = 1)         regret 0.0089±0.0004 first8 0.0118 last8 0.0080 harm 0.013 good 0.11 bad 0.01 innov 0.84 gain +0.0036 [+0.0030,+0.0042] vs commit-only -0.0014 [-0.0018,-0.0011]
++ learning bonus (w = 4)         regret 0.0090±0.0004 first8 0.0116 last8 0.0084 harm 0.013 good 0.10 bad 0.01 innov 0.83 gain +0.0034 [+0.0028,+0.0041] vs commit-only -0.0016 [-0.0020,-0.0012]

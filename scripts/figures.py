@@ -21,10 +21,11 @@ from matplotlib.colors import ListedColormap
 from matplotlib.patches import FancyBboxPatch, Patch
 from scipy.stats import beta
 
-from cdm import Lottery, Policy, expected_improvement
+from cdm import Beta, Lottery, Policy, expected_improvement
 from cdm.belief import temper
 from cdm.decide import branches
 from cdm.lottery import Competitor, p_best
+from cdm.mechanism import next_decision_value
 
 OUT = Path("paper_figs")
 FULL, HALF, H = 6.5, 3.1, 2.25
@@ -565,6 +566,105 @@ def fig_jev(jev: dict) -> None:
     _save(fig, "fig_jev")
 
 
+def fig_mech_voi() -> None:
+    """M5: value of one perfect test for the next decision, as a function of its threshold."""
+    fig, ax = _half()
+    t = np.linspace(0, 1, 2001)
+    for (a, b), col in zip(((1, 1), (5, 5), (50, 50)), (BLUE, ORANGE, AQUA), strict=True):
+        bel = Beta(a, b)
+        v = [next_decision_value(bel, x) for x in t]
+        ax.plot(t, v, color=col, label=f"Beta({a}, {b}), $n={a + b}$")
+    ax.set_xlabel("threshold $t$ of the next decision")
+    ax.set_ylabel("value of one test ($\\alpha=1$)")
+    ax.set_xlim(0.25, 0.75)
+    ax.set_ylim(0, 0.115)
+    ax.legend(loc="upper right", handlelength=1.4)
+    _save(fig, "fig_mech_voi")
+
+
+def fig_mech_jev(mj: dict) -> None:
+    fig, axes = plt.subplots(1, 2, figsize=(FULL, 2.4), layout="constrained", width_ratios=[1.3, 1])
+    ax = axes[0]
+    rows = mj["rows"]
+    rng = np.random.default_rng(1)
+    for measure, col, mk, lab in (
+        ("judged", ORANGE, "o", "judged novelty (ordinal Score)"),
+        ("nu", BLUE, "s", r"mechanism novelty $\nu$"),
+    ):
+        for hype, fill in ((False, col), (True, "white")):
+            sel = [r for r in rows if r["hype"] == hype]
+            x = np.array([r["nu_true"] for r in sel]) + rng.uniform(-0.025, 0.025, len(sel))
+            x = x + (-0.035 if measure == "judged" else 0.035)
+            ax.scatter(
+                x,
+                [r[measure] for r in sel],
+                s=14,
+                marker=mk,
+                facecolor=fill,
+                edgecolor=col,
+                lw=0.8,
+                label=f"{lab}, {'hype' if hype else 'plain'}",
+            )
+    ax.plot([0, 1], [0, 1], color=MUTED, lw=0.8, ls="--")
+    ax.set_xlabel(r"true mechanism novelty $\nu^*$")
+    ax.set_ylabel("measured novelty")
+    ax.set_xlim(-0.1, 1.1)
+    ax.set_ylim(-0.05, 1.05)
+    ax.legend(loc="lower right", fontsize=6.5, handletextpad=0.3)
+
+    ax = axes[1]
+    items = (
+        ("judged", "judged novelty"),
+        ("nu", r"mechanism novelty $\nu$"),
+        ("kappa", r"combination novelty $\kappa$"),
+        ("q_mech", r"mechanism risk $q^{\mathrm{mech}}$"),
+    )
+    for k, (key, _lab) in enumerate(items):
+        e = mj[f"hype_effect_{key}"]
+        lo, hi = e["ci"]
+        ax.plot([lo, hi], [k, k], color=INK2, lw=1.2)
+        ax.plot([e["mean"]], [k], "o", color=(ORANGE, BLUE, AQUA, YELLOW)[k], mec="white", ms=6)
+    ax.axvline(0, color=MUTED, lw=0.8)
+    ax.set_yticks(range(len(items)), [i[1] for i in items])
+    ax.invert_yaxis()
+    ax.grid(axis="y", visible=False)
+    ax.set_xlabel("effect of hype wording (paired, 95% CI)")
+    _save(fig, "fig_mech_jev")
+
+
+def fig_mech_bench(mb: dict) -> None:
+    fig, axes = plt.subplots(1, 2, figsize=(FULL, 2.6), layout="constrained")
+    pick = (
+        ("veto untested principles", MUTED, "veto untested principles"),
+        ("mechanism novelty, no learning", ORANGE, "innovation slot, no learning"),
+        ("mechanism novelty + learning", BLUE, "innovation slot + learning"),
+        ("+ learning bonus (w = 1)", AQUA, "+ learning bonus ($w=1$)"),
+        ("commit only, learning", YELLOW, "commit only, learning"),
+    )
+    cfgs = ((0.5, 0.05, 24), (0.65, 0.05, 48))
+    for ax, (b, eps, horizon) in zip(axes, cfgs, strict=True):
+        res = next(
+            g for g in mb["grid"] if (g["base_value"], g["eps"], g["T"]) == (b, eps, horizon)
+        )
+        for name, col, lab in pick:
+            curve = np.array(res["policies"][name]["curve"])
+            k = 4  # moving average over 4 decisions
+            sm = np.convolve(curve, np.ones(k) / k, mode="valid")
+            ax.plot(np.arange(k, curve.size + 1), sm, color=col, label=lab, lw=1.4)
+        ax.set_xlabel("decision")
+        ax.set_ylabel("regret vs. oracle")
+        ax.set_ylim(bottom=0)
+        ax.set_title(
+            f"status quo {b}, pilot share {eps}, {horizon} decisions",
+            loc="left",
+            fontsize=7.5,
+            color=INK2,
+        )
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="outside lower center", ncol=3, fontsize=7)
+    _save(fig, "fig_mech_bench")
+
+
 if __name__ == "__main__":
     exp = json.loads((OUT / "experiments.json").read_text())
     fig_pipeline()
@@ -579,3 +679,6 @@ if __name__ == "__main__":
     fig_innovation(exp)
     fig_benchmark(exp)
     fig_jev(json.loads((OUT / "jev_benchmark.json").read_text()))
+    fig_mech_voi()
+    fig_mech_jev(json.loads((OUT / "mechanism_jev.json").read_text()))
+    fig_mech_bench(json.loads((OUT / "mechanism_benchmark.json").read_text()))

@@ -8,6 +8,8 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+from .mechanism import Morphology
+
 
 @dataclass(frozen=True)
 class Option:
@@ -53,6 +55,7 @@ class Problem:
     constraints: list[Constraint] = field(default_factory=list)
     precedents: list[str] = field(default_factory=list)  # what "normal" looks like
     niches: dict[str, str] = field(default_factory=dict)  # approach archetypes for diversity
+    morphology: Morphology | None = None  # functions and working principles (mechanism layer)
 
 
 @dataclass
@@ -64,3 +67,10 @@ class Judgment:
     violations: dict[str, float]  # constraint id -> P(violation)
     novelty: NDArray[np.float64]  # distribution over novelty levels, least→most novel
     niche: dict[str, float] = field(default_factory=dict)  # niche -> probability
+    # mechanism layer: function id -> distribution over its principles (catalogue, then NEW),
+    # and the judge's P(a NEW principle fails to perform the function)
+    mechanism: dict[str, NDArray[np.float64]] = field(default_factory=dict)
+    mechanism_risk: dict[str, float] = field(default_factory=dict)
+    mechanism_novelty: float | None = None  # ν; replaces the judged novelty when set
+    combination: float = 0.0  # κ: P(the combination of principles is in no precedent)
+    learning: float = 0.0  # Σ θ̄(1−θ̄)/(n+1) over the option's principles (M5)

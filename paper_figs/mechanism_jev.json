@@ -1,0 +1,1530 @@
+{
+ "n_options": 56,
+ "n_mechanisms": 28,
+ "hype_effect_judged": {
+  "mean": 0.05797940385759209,
+  "ci": [
+   0.03815614050398121,
+   0.08020664100509817
+  ]
+ },
+ "hype_effect_judged_raw": {
+  "mean": 0.05917152520277721,
+  "ci": [
+   0.03720202428361239,
+   0.08284443921855968
+  ]
+ },
+ "hype_effect_nu": {
+  "mean": 0.004546165757588168,
+  "ci": [
+   -0.005695481037651322,
+   0.01686460650477435
+  ]
+ },
+ "hype_effect_kappa": {
+  "mean": 0.00693807437035552,
+  "ci": [
+   -0.008281448723734324,
+   0.024503908413519748
+  ]
+ },
+ "hype_effect_q_mech": {
+  "mean": 0.034795113486605043,
+  "ci": [
+   0.017635345440451835,
+   0.0535643437596727
+  ]
+ },
+ "track_judged": {
+  "spearman": 0.7300751879699249,
+  "pearson": 0.90177816731156,
+  "slope": 0.851144877716403,
+  "intercept": 0.1351782688272447,
+  "mae": 0.12197426993544858
+ },
+ "track_nu": {
+  "spearman": 0.7286397812713602,
+  "pearson": 0.9762565510537702,
+  "slope": 0.883065094373455,
+  "intercept": 0.048032170305768625,
+  "mae": 0.04398085982556207
+ },
+ "by_kind": {
+  "precedent": {
+   "plain": {
+    "judged": 0.07547412578641172,
+    "nu": 0.05854318846292295,
+    "nu_true": 0.0,
+    "q_mech": 0.04108352830277351
+   },
+   "hype": {
+    "judged": 0.08413347407477578,
+    "nu": 0.048384186219326795,
+    "nu_true": 0.0,
+    "q_mech": 0.03166747797089235
+   }
+  },
+  "catalogue": {
+   "plain": {
+    "judged": 0.5877948281563817,
+    "nu": 0.5845371796156901,
+    "nu_true": 0.5833333333333334,
+    "q_mech": 0.47219867058671894
+   },
+   "hype": {
+    "judged": 0.6642985027588203,
+    "nu": 0.5829124152397719,
+    "nu_true": 0.5833333333333334,
+    "q_mech": 0.5213691348880505
+   }
+  },
+  "new": {
+   "plain": {
+    "judged": 0.5848178229836396,
+    "nu": 0.4390223528714535,
+    "nu_true": 0.5,
+    "q_mech": 0.47650800540577365
+   },
+   "hype": {
+    "judged": 0.6643308762931903,
+    "nu": 0.4675300818304856,
+    "nu_true": 0.5,
+    "q_mech": 0.5339512564887752
+   }
+  }
+ },
+ "gate_judged": {
+  "auroc": 1.0,
+  "known_plain_ge_0.25": 0.0,
+  "known_hype_ge_0.25": 0.0,
+  "novel_plain_ge_0.25": 1.0,
+  "novel_hype_ge_0.25": 1.0,
+  "known_plain_ge_0.5": 0.0,
+  "known_hype_ge_0.5": 0.0,
+  "novel_plain_ge_0.5": 0.8,
+  "novel_hype_ge_0.5": 0.9
+ },
+ "gate_nu": {
+  "auroc": 1.0,
+  "known_plain_ge_0.25": 0.0,
+  "known_hype_ge_0.25": 0.0,
+  "novel_plain_ge_0.25": 1.0,
+  "novel_hype_ge_0.25": 1.0,
+  "known_plain_ge_0.5": 0.0,
+  "known_hype_ge_0.5": 0.0,
+  "novel_plain_ge_0.5": 0.5,
+  "novel_hype_ge_0.5": 0.65
+ },
+ "classification": {
+  "accuracy": 0.9910714285714286,
+  "accuracy_plain": 0.9821428571428571,
+  "accuracy_hype": 1.0,
+  "accuracy_new": 0.9375,
+  "accuracy_catalogued": 1.0,
+  "mean_p_true": 0.8718673693388023,
+  "n_cells": 112
+ },
+ "rows": [
+  {
+   "domain": 0,
+   "mech": 0,
+   "kind": "precedent",
+   "hype": false,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.057977807971164586,
+   "judged_raw": 0.021727966726409087,
+   "nu": 0.04409077974416293,
+   "kappa": 0.12741234708636773,
+   "q_mech": 0.024963830661957065,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.9338638303837558,
+    "pay": 0.9338638303837558
+   },
+   "is_new": {
+    "reach": false,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 0,
+   "kind": "precedent",
+   "hype": true,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.11434042385415356,
+   "judged_raw": 0.05941177950351729,
+   "nu": 0.045949950561171946,
+   "kappa": 0.13084413075749501,
+   "q_mech": 0.02745993171318828,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.9338638303837558,
+    "pay": 0.9301900602215204
+   },
+   "is_new": {
+    "reach": false,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 1,
+   "kind": "precedent",
+   "hype": false,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.12608594974581955,
+   "judged_raw": 0.06763866455078597,
+   "nu": 0.060081107197730584,
+   "kappa": 0.1566250587275403,
+   "q_mech": 0.0849227240365642,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.9209698896731789,
+    "pay": 0.9152295605773161
+   },
+   "is_new": {
+    "reach": false,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 1,
+   "kind": "precedent",
+   "hype": true,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.11211106712704948,
+   "judged_raw": 0.05462029696160352,
+   "nu": 0.04409077974416293,
+   "kappa": 0.12741234708636773,
+   "q_mech": 0.06646941667417594,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.9338638303837558,
+    "pay": 0.9338638303837558
+   },
+   "is_new": {
+    "reach": false,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 2,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.4466279982943156,
+   "judged_raw": 0.44311874360917547,
+   "nu": 0.45931697834208884,
+   "kappa": 0.9020232084034681,
+   "q_mech": 0.41668673384512434,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.8535052192921322,
+    "pay": 0.9338638303837558
+   },
+   "is_new": {
+    "reach": false,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 2,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6077930835732019,
+   "judged_raw": 0.6172401489586894,
+   "nu": 0.4741539977130754,
+   "kappa": 0.929782648287391,
+   "q_mech": 0.5661582495898743,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.8642807377611579,
+    "pay": 0.9338638303837558
+   },
+   "is_new": {
+    "reach": false,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 3,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.4210599438101256,
+   "judged_raw": 0.41706423736804793,
+   "nu": 0.5,
+   "kappa": 0.9789266085571426,
+   "q_mech": 0.3292369313740199,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.9338638303837558,
+    "pay": 0.9338638303837555
+   },
+   "is_new": {
+    "reach": false,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 3,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.45481521955060983,
+   "judged_raw": 0.45279449061659455,
+   "nu": 0.5,
+   "kappa": 0.9789266085571426,
+   "q_mech": 0.3704121831699927,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.9338638303837558,
+    "pay": 0.9338638303837555
+   },
+   "is_new": {
+    "reach": false,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 4,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.5782098199551432,
+   "judged_raw": 0.6011959361819552,
+   "nu": 0.5105409784223505,
+   "kappa": 0.9794310739243305,
+   "q_mech": 0.6898985651843474,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.9301900602215206,
+    "pay": 0.9131514212497525
+   },
+   "is_new": {
+    "reach": false,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 4,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6911759524239778,
+   "judged_raw": 0.7107732082936071,
+   "nu": 0.50389014605352,
+   "kappa": 0.9792599552532567,
+   "q_mech": 0.7061033879234075,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.9209698896731789,
+    "pay": 0.9265300511415662
+   },
+   "is_new": {
+    "reach": false,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 5,
+   "kind": "new",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.4269100519874496,
+   "judged_raw": 0.4197424251002226,
+   "nu": 0.2985296723363404,
+   "kappa": 0.579024208787171,
+   "q_mech": 0.22372551275288177,
+   "correct": {
+    "reach": false,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.4312011989737992,
+    "pay": 0.8896040444111383
+   },
+   "is_new": {
+    "reach": true,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 5,
+   "kind": "new",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.44231609147915624,
+   "judged_raw": 0.4335915021551786,
+   "nu": 0.42043172864565803,
+   "kappa": 0.751896351334984,
+   "q_mech": 0.3719687803454651,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.5745117219174661,
+    "pay": 0.8154418208739381
+   },
+   "is_new": {
+    "reach": true,
+    "pay": false
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 6,
+   "kind": "new",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.5533323372567401,
+   "judged_raw": 0.5605960308987101,
+   "nu": 0.5272080839640684,
+   "kappa": 0.969473904147789,
+   "q_mech": 0.6860421580195487,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.854762974488818,
+    "pay": 0.9005859369647005
+   },
+   "is_new": {
+    "reach": false,
+    "pay": true
+   }
+  },
+  {
+   "domain": 0,
+   "mech": 6,
+   "kind": "new",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.7428813823416603,
+   "judged_raw": 0.779671689729477,
+   "nu": 0.5244952311741778,
+   "kappa": 0.9801384790461585,
+   "q_mech": 0.743837514029963,
+   "correct": {
+    "reach": true,
+    "pay": true
+   },
+   "p_true": {
+    "reach": 0.8776448478649683,
+    "pay": 0.9222810459526526
+   },
+   "is_new": {
+    "reach": false,
+    "pay": true
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 0,
+   "kind": "precedent",
+   "hype": false,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.1071521936675178,
+   "judged_raw": 0.05897132404494096,
+   "nu": 0.04409077974416293,
+   "kappa": 0.08672356184448937,
+   "q_mech": 0.026393738532832778,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.9338638303837558,
+    "deliver": 0.9338638303837558
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 0,
+   "kind": "precedent",
+   "hype": true,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.09869566988486833,
+   "judged_raw": 0.04498646869198457,
+   "nu": 0.0506272170588305,
+   "kappa": 0.0992160985699192,
+   "q_mech": 0.024229017171178646,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.9209698896731789,
+    "deliver": 0.9338638303837558
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 1,
+   "kind": "precedent",
+   "hype": false,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.08287793147441085,
+   "judged_raw": 0.03877919392556426,
+   "nu": 0.05044089663830721,
+   "kappa": 0.11868806618415939,
+   "q_mech": 0.02290092337319527,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.9212916212642449,
+    "deliver": 0.9338638303837558
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 1,
+   "kind": "precedent",
+   "hype": true,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.10065581631752984,
+   "judged_raw": 0.053071198740253546,
+   "nu": 0.04409077974416293,
+   "kappa": 0.10682495485812249,
+   "q_mech": 0.02224990615327671,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.9338638303837558,
+    "deliver": 0.9338638303837558
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 2,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6084808880323906,
+   "judged_raw": 0.6364112751192207,
+   "nu": 0.4984367160065657,
+   "kappa": 0.9553435151089905,
+   "q_mech": 0.31813973797949946,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.9116381217492929,
+    "deliver": 0.9338638303837558
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 2,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.664794842549846,
+   "judged_raw": 0.6864508038659034,
+   "nu": 0.49443437032042376,
+   "kappa": 0.9476784247873518,
+   "q_mech": 0.406103407332261,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.860379950229144,
+    "deliver": 0.9338638303837558
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 3,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6310645326850535,
+   "judged_raw": 0.655990103530529,
+   "nu": 0.5083034032893263,
+   "kappa": 0.9301129560071503,
+   "q_mech": 0.44115576683334023,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.8841097168742358,
+    "deliver": 0.8925591723297164
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 3,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6611885886711345,
+   "judged_raw": 0.6888164364137487,
+   "nu": 0.5149826809987059,
+   "kappa": 0.934316430114505,
+   "q_mech": 0.5530240443903186,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.8748283741047854,
+    "deliver": 0.9007689863947266
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 4,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.5454190370518552,
+   "judged_raw": 0.5616811461235861,
+   "nu": 0.49381498142471236,
+   "kappa": 0.9661978056699865,
+   "q_mech": 0.3260183400736336,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.9026425061321046,
+    "deliver": 0.9338638303837558
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 4,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.5949606986623511,
+   "judged_raw": 0.6091651048100064,
+   "nu": 0.4881482051616402,
+   "kappa": 0.9550442990887575,
+   "q_mech": 0.34135349834091555,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.8743755621327042,
+    "deliver": 0.9338638303837558
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 5,
+   "kind": "new",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6660463466406782,
+   "judged_raw": 0.6966041895469254,
+   "nu": 0.48506330666322417,
+   "kappa": 0.9086654542567887,
+   "q_mech": 0.41610822865684893,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.8749847990423202,
+    "deliver": 0.9081187018721311
+   },
+   "is_new": {
+    "acquire": true,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 5,
+   "kind": "new",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6517369631527475,
+   "judged_raw": 0.6732197672362115,
+   "nu": 0.4572570937462439,
+   "kappa": 0.868168747978538,
+   "q_mech": 0.48705849344420493,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.8329205014727826,
+    "deliver": 0.9209698896731789
+   },
+   "is_new": {
+    "acquire": true,
+    "deliver": false
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 6,
+   "kind": "new",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6907546000394535,
+   "judged_raw": 0.7137322247229789,
+   "nu": 0.42618840338762487,
+   "kappa": 0.778546099218367,
+   "q_mech": 0.635852762352739,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.8731824433741499,
+    "deliver": 0.4855258986639847
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": true
+   }
+  },
+  {
+   "domain": 1,
+   "mech": 6,
+   "kind": "new",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.7884331566160776,
+   "judged_raw": 0.8293111254457025,
+   "nu": 0.4636660762130407,
+   "kappa": 0.8343541966469608,
+   "q_mech": 0.6716181768645022,
+   "correct": {
+    "acquire": true,
+    "deliver": true
+   },
+   "p_true": {
+    "acquire": 0.8591897680056882,
+    "deliver": 0.531140231528832
+   },
+   "is_new": {
+    "acquire": false,
+    "deliver": true
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 0,
+   "kind": "precedent",
+   "hype": false,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.054307636764881,
+   "judged_raw": 0.01930015609796627,
+   "nu": 0.04409077974416293,
+   "kappa": 0.08672356184448937,
+   "q_mech": 0.03200572295865256,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.9338638303837558,
+    "cool": 0.9338638303837558
+   },
+   "is_new": {
+    "transport": false,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 0,
+   "kind": "precedent",
+   "hype": true,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.07686236560488208,
+   "judged_raw": 0.03141310093487062,
+   "nu": 0.04409077974416293,
+   "kappa": 0.08672356184448937,
+   "q_mech": 0.031035462855084184,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.9338638303837558,
+    "cool": 0.9338638303837558
+   },
+   "is_new": {
+    "transport": false,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 1,
+   "kind": "precedent",
+   "hype": false,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.05048544243203153,
+   "judged_raw": 0.017424999999999996,
+   "nu": 0.04409077974416293,
+   "kappa": 0.10682495485812249,
+   "q_mech": 0.03893100217135059,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.9338638303837558,
+    "cool": 0.9338638303837558
+   },
+   "is_new": {
+    "transport": false,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 1,
+   "kind": "precedent",
+   "hype": true,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.047934634611901034,
+   "judged_raw": 0.015944856417671738,
+   "nu": 0.04409077974416293,
+   "kappa": 0.10682495485812249,
+   "q_mech": 0.035710515397151865,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.9338638303837558,
+    "cool": 0.9338638303837558
+   },
+   "is_new": {
+    "transport": false,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 2,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6939828513593905,
+   "judged_raw": 0.7181329506476366,
+   "nu": 0.5203104569133352,
+   "kappa": 0.955757541914365,
+   "q_mech": 0.7283044413023765,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.8434760812348345,
+    "cool": 0.8887600436465828
+   },
+   "is_new": {
+    "transport": false,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 2,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.8415948542268175,
+   "judged_raw": 0.8794455908484251,
+   "nu": 0.5196643554171496,
+   "kappa": 0.9608430795234685,
+   "q_mech": 0.7864130783864623,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.9006644258687891,
+    "cool": 0.8959648454676558
+   },
+   "is_new": {
+    "transport": false,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 3,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.5060807451436382,
+   "judged_raw": 0.5063798883486738,
+   "nu": 0.49688359319242215,
+   "kappa": 0.9328898376152681,
+   "q_mech": 0.6062144327964218,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.9116975381487423,
+    "cool": 0.8468045157912758
+   },
+   "is_new": {
+    "transport": false,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 3,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.5115703732904366,
+   "judged_raw": 0.5114230163137256,
+   "nu": 0.500210664668368,
+   "kappa": 0.9516390430781203,
+   "q_mech": 0.6666951845216784,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.9259224838010989,
+    "cool": 0.9131529533696491
+   },
+   "is_new": {
+    "transport": false,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 4,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 1.0,
+   "kappa_true": 1.0,
+   "judged": 0.7453950165895797,
+   "judged_raw": 0.7590737682143707,
+   "nu": 0.9515761003507981,
+   "kappa": 0.9981131969495948,
+   "q_mech": 0.8401472052230607,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.8749825526978594,
+    "cool": 0.876615794957887
+   },
+   "is_new": {
+    "transport": false,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 4,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 1.0,
+   "kappa_true": 1.0,
+   "judged": 0.8258954158197382,
+   "judged_raw": 0.8588071902184038,
+   "nu": 0.956695249118783,
+   "kappa": 0.9985935419490712,
+   "q_mech": 0.9010183152495082,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.9116975381487423,
+    "cool": 0.8981508903448729
+   },
+   "is_new": {
+    "transport": false,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 5,
+   "kind": "new",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.582011541884718,
+   "judged_raw": 0.6036149758155933,
+   "nu": 0.5189621640375177,
+   "kappa": 0.8479154950632379,
+   "q_mech": 0.6782838693115527,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.7794254204670688,
+    "cool": 0.741833553782682
+   },
+   "is_new": {
+    "transport": true,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 5,
+   "kind": "new",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.636309453982467,
+   "judged_raw": 0.6572587317500835,
+   "nu": 0.5601636917392213,
+   "kappa": 0.8668399025917752,
+   "q_mech": 0.7531074485075306,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.7844739206042534,
+    "cool": 0.6648418339052048
+   },
+   "is_new": {
+    "transport": true,
+    "cool": false
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 6,
+   "kind": "new",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6571460592619407,
+   "judged_raw": 0.6813218228013371,
+   "nu": 0.4971046434836514,
+   "kappa": 0.9213072297457433,
+   "q_mech": 0.7415846121453801,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.8981508903448729,
+    "cool": 0.8924558429945649
+   },
+   "is_new": {
+    "transport": false,
+    "cool": true
+   }
+  },
+  {
+   "domain": 2,
+   "mech": 6,
+   "kind": "new",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.7557611033370368,
+   "judged_raw": 0.7777997261526012,
+   "nu": 0.507928050849484,
+   "kappa": 0.9393835700509512,
+   "q_mech": 0.7601439330580746,
+   "correct": {
+    "transport": true,
+    "cool": true
+   },
+   "p_true": {
+    "transport": 0.8960050197185512,
+    "cool": 0.9116975381487423
+   },
+   "is_new": {
+    "transport": false,
+    "cool": true
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 0,
+   "kind": "precedent",
+   "hype": false,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.047934634611901034,
+   "judged_raw": 0.015944856417671738,
+   "nu": 0.058708905770664066,
+   "kappa": 0.1146621556231403,
+   "q_mech": 0.034788749095779004,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.9050180964657324,
+    "recover": 0.9338638303837558
+   },
+   "is_new": {
+    "detect": false,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 0,
+   "kind": "precedent",
+   "hype": true,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.046096432855132,
+   "judged_raw": 0.015000000000000005,
+   "nu": 0.04409077974416293,
+   "kappa": 0.08672356184448937,
+   "q_mech": 0.015620396584898999,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.9338638303837558,
+    "recover": 0.9338638303837558
+   },
+   "is_new": {
+    "detect": false,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 1,
+   "kind": "precedent",
+   "hype": false,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.07697140962356748,
+   "judged_raw": 0.03376440114987395,
+   "nu": 0.12275147912003001,
+   "kappa": 0.2555421340061571,
+   "q_mech": 0.0637615355918566,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.7783283413203836,
+    "recover": 0.9338638303837558
+   },
+   "is_new": {
+    "detect": false,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 1,
+   "kind": "precedent",
+   "hype": true,
+   "nu_true": 0.0,
+   "kappa_true": 0.0,
+   "judged": 0.07637138234268989,
+   "judged_raw": 0.03218462529004742,
+   "nu": 0.0700424234137973,
+   "kappa": 0.1558079407775288,
+   "q_mech": 0.030565177218184192,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.8826371352726379,
+    "recover": 0.9338638303837558
+   },
+   "is_new": {
+    "detect": false,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 2,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6163934821159268,
+   "judged_raw": 0.6474597563033359,
+   "nu": 0.501859170817009,
+   "kappa": 0.9585021783154238,
+   "q_mech": 0.3106732442253667,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.9338638303837555,
+    "recover": 0.9301900602215204
+   },
+   "is_new": {
+    "detect": false,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 2,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.724615354839077,
+   "judged_raw": 0.7446924354954245,
+   "nu": 0.501859170817009,
+   "kappa": 0.9585021783154238,
+   "q_mech": 0.29036134081022147,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.9338638303837555,
+    "recover": 0.9301900602215204
+   },
+   "is_new": {
+    "detect": false,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 3,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.5623092609487794,
+   "judged_raw": 0.5857923133607222,
+   "nu": 0.6266090970156418,
+   "kappa": 0.9670094747456001,
+   "q_mech": 0.2948075101198232,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.6795759214584806,
+    "recover": 0.9301900602215204
+   },
+   "is_new": {
+    "detect": false,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 3,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.603681359970177,
+   "judged_raw": 0.6334922730480829,
+   "nu": 0.5846828404096075,
+   "kappa": 0.9657645321993349,
+   "q_mech": 0.2868230228606796,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.7664100712419196,
+    "recover": 0.9338638303837555
+   },
+   "is_new": {
+    "detect": false,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 4,
+   "kind": "catalogue",
+   "hype": false,
+   "nu_true": 1.0,
+   "kappa_true": 1.0,
+   "judged": 0.6985143618903824,
+   "judged_raw": 0.7226888914283149,
+   "nu": 0.9467946796140316,
+   "kappa": 0.9977284182468602,
+   "q_mech": 0.36510113808361344,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.9301900602215206,
+    "recover": 0.8996485676997305
+   },
+   "is_new": {
+    "detect": false,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 4,
+   "kind": "catalogue",
+   "hype": true,
+   "nu_true": 1.0,
+   "kappa_true": 1.0,
+   "judged": 0.7894962895284743,
+   "judged_raw": 0.8049901394992147,
+   "nu": 0.9562273021989804,
+   "kappa": 0.9985630025052146,
+   "q_mech": 0.38196390608128583,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.9301900602215206,
+    "recover": 0.9152295605773159
+   },
+   "is_new": {
+    "detect": false,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 5,
+   "kind": "new",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6210664118972472,
+   "judged_raw": 0.6529341645242561,
+   "nu": 0.3068207196982066,
+   "kappa": 0.5893125609150824,
+   "q_mech": 0.2291992282567178,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.507808709593257,
+    "recover": 0.9338638303837558
+   },
+   "is_new": {
+    "detect": true,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 5,
+   "kind": "new",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6677976047492241,
+   "judged_raw": 0.6974104393137724,
+   "nu": 0.30330708453528343,
+   "kappa": 0.5825940496907507,
+   "q_mech": 0.25802019430450596,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.506196929530939,
+    "recover": 0.9338638303837558
+   },
+   "is_new": {
+    "detect": true,
+    "recover": false
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 6,
+   "kind": "new",
+   "hype": false,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.4812752349008893,
+   "judged_raw": 0.4855197241223832,
+   "nu": 0.4523018294009946,
+   "kappa": 0.7800815798005956,
+   "q_mech": 0.20126767175052052,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.8036874090765355,
+    "recover": 0.5818628203956554
+   },
+   "is_new": {
+    "detect": false,
+    "recover": true
+   }
+  },
+  {
+   "domain": 3,
+   "mech": 6,
+   "kind": "new",
+   "hype": true,
+   "nu_true": 0.5,
+   "kappa_true": 1.0,
+   "judged": 0.6294112546871524,
+   "judged_raw": 0.6464226896541475,
+   "nu": 0.5029916977407756,
+   "kappa": 0.8611636783416852,
+   "q_mech": 0.22585551135595539,
+   "correct": {
+    "detect": true,
+    "recover": true
+   },
+   "p_true": {
+    "detect": 0.8011316835401477,
+    "recover": 0.6225501344791108
+   },
+   "is_new": {
+    "detect": false,
+    "recover": true
+   }
+  }
+ ]
+}

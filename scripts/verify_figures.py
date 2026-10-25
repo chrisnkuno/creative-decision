@@ -11,9 +11,10 @@ from pathlib import Path
 
 import numpy as np
 
-from cdm import Competitor, Lottery, Policy, expected_improvement, p_best
+from cdm import Beta, Competitor, Lottery, Policy, expected_improvement, p_best
 from cdm.belief import temper
 from cdm.decide import branches
+from cdm.mechanism import next_decision_value, next_decision_value_bound
 
 failures = 0
 
@@ -224,6 +225,183 @@ check(
     and near(g3["gain_vs_veto"], 0.020, 3)
     and near(g3["gain_vs_veto_ci"][0], -0.019, 3)
     and near(g3["gain_vs_veto_ci"][1], 0.067, 3),
+)
+
+# --- mechanism layer -----------------------------------------------------------------------
+ratio = next_decision_value_bound(Beta(1, 1)) / next_decision_value_bound(Beta(50, 50))
+check("M5: ignorance vs a known coin = 101/3 (about 34)", ok=near(ratio, 101 / 3, 9))
+check(
+    "fig_mech_voi: peak at t = mean equals the bound",
+    ok=all(
+        near(next_decision_value(Beta(a, a), 0.5), next_decision_value_bound(Beta(a, a)), 12)
+        for a in (1, 5, 50)
+    ),
+)
+mj = json.loads(Path("paper_figs/mechanism_jev.json").read_text())
+check("mech Jev: 56 options, 28 mechanisms", ok=mj["n_options"] == 56 and mj["n_mechanisms"] == 28)
+for key, (mean, lo, hi) in {
+    "judged": (0.058, 0.038, 0.080),
+    "nu": (0.005, -0.006, 0.017),
+    "kappa": (0.007, -0.008, 0.025),
+    "q_mech": (0.035, 0.018, 0.054),
+}.items():
+    e = mj[f"hype_effect_{key}"]
+    check(
+        f"mech Jev: hype effect on {key} {mean} [{lo}, {hi}]",
+        ok=near(e["mean"], mean, 3) and near(e["ci"][0], lo, 3) and near(e["ci"][1], hi, 3),
+    )
+check(
+    "mech Jev: MAE 0.122 / 0.044, Pearson 0.90 / 0.98",
+    ok=near(mj["track_judged"]["mae"], 0.122, 3)
+    and near(mj["track_nu"]["mae"], 0.044, 3)
+    and near(mj["track_judged"]["pearson"], 0.90, 2)
+    and near(mj["track_nu"]["pearson"], 0.98, 2),
+)
+cl = mj["classification"]
+check(
+    "mech Jev: 111/112 cells, 15/16 NEW, mean P(true) 0.87",
+    ok=round(cl["accuracy"] * cl["n_cells"]) == 111
+    and cl["n_cells"] == 112
+    and near(cl["accuracy_new"] * 16, 15, 9)
+    and near(cl["mean_p_true"], 0.87, 2),
+)
+bk = mj["by_kind"]["precedent"]
+check(
+    "mech Jev: repeated mechanisms 0.08 (judged) and 0.05 (nu)",
+    ok=near((bk["plain"]["judged"] + bk["hype"]["judged"]) / 2, 0.08, 2)
+    and near((bk["plain"]["nu"] + bk["hype"]["nu"]) / 2, 0.05, 2),
+)
+gj, gn = mj["gate_judged"], mj["gate_nu"]
+check(
+    "mech Jev: AUROC 1 for both; gate 0.5 for nu passes 50% / 65%; gate 0.25 separates",
+    ok=gj["auroc"] == 1.0
+    and gn["auroc"] == 1.0
+    and near(gn["novel_plain_ge_0.5"], 0.50, 2)
+    and near(gn["novel_hype_ge_0.5"], 0.65, 2)
+    and all(
+        gn[f"novel_{w}_ge_0.25"] == 1.0 and gn[f"known_{w}_ge_0.25"] == 0.0
+        for w in ("plain", "hype")
+    ),
+)
+nu_true = [r["nu_true"] for r in mj["rows"] if r["kind"] != "precedent" and not r["hype"]]
+check(
+    "mech Jev: 18 of 20 novel mechanisms have nu* = 0.5",
+    ok=sum(abs(x - 0.5) < 1e-9 for x in nu_true) == 18 and len(nu_true) == 20,
+)
+
+mb = json.loads(Path("paper_figs/mechanism_benchmark.json").read_text())
+
+
+def cell(b: float, eps: float, horizon: int) -> dict:
+    return next(g for g in mb["grid"] if (g["base_value"], g["eps"], g["T"]) == (b, eps, horizon))
+
+
+check("mech bench: 300 runs", ok=mb["runs"] == 300)
+table = {
+    (0.5, 0.05, 24): {
+        "veto untested principles": (0.0542, 0.0019, 0.041, 0.01, 0.01),
+        "commit only, learning": (0.0260, 0.0007, 0.058, 0.12, 0.27),
+        "judged novelty, no learning": (0.0334, 0.0009, 0.064, 0.26, 0.22),
+        "mechanism novelty, no learning": (0.0331, 0.0009, 0.064, 0.26, 0.22),
+        "mechanism novelty + learning": (0.0250, 0.0007, 0.056, 0.07, 0.27),
+        "+ learning bonus (w = 1)": (0.0246, 0.0007, 0.055, 0.07, 0.27),
+    },
+    (0.65, 0.05, 48): {
+        "veto untested principles": (0.0083, 0.0006, 0.006, 0.00, 0.00),
+        "commit only, learning": (0.0074, 0.0004, 0.012, 0.02, 0.08),
+        "judged novelty, no learning": (0.0124, 0.0005, 0.017, 0.06, 0.05),
+        "mechanism novelty, no learning": (0.0124, 0.0005, 0.017, 0.06, 0.05),
+        "mechanism novelty + learning": (0.0085, 0.0003, 0.013, 0.01, 0.11),
+        "+ learning bonus (w = 1)": (0.0089, 0.0004, 0.013, 0.01, 0.11),
+    },
+}
+for cfg, rows in table.items():
+    for name, (reg, se, harm, bad, good) in rows.items():
+        d = cell(*cfg)["policies"][name]
+        check(
+            f"mech bench table {cfg}: {name}",
+            ok=near(d["regret"], reg, 4)
+            and near(d["regret_se"], se, 4)
+            and near(d["harm"], harm, 3)
+            and near(d["bad_last8"], bad, 2)
+            and near(d["good_last8"], good, 2),
+        )
+learning = "mechanism novelty + learning"
+learn_gain = [g["policies"][learning]["gain_vs_no_learning"] for g in mb["grid"]]
+check(
+    "mech bench: learning gains 0.0025..0.0081, all CIs above zero",
+    ok=near(min(learn_gain), 0.0025, 4)
+    and near(max(learn_gain), 0.0081, 4)
+    and all(g["policies"][learning]["gain_ci"][0] > 0 for g in mb["grid"]),
+)
+a = cell(0.5, 0.05, 24)["policies"]
+long_run = cell(0.65, 0.05, 48)["policies"]
+check(
+    "mech bench: learning gain 0.0081 [0.0068, 0.0094]",
+    ok=near(a[learning]["gain_ci"][0], 0.0068, 4) and near(a[learning]["gain_ci"][1], 0.0094, 4),
+)
+check(
+    "mech bench: bad late commitments 26% -> 7% (B=0.5) and 6% -> 1% (B=0.65)",
+    ok=near(a["mechanism novelty, no learning"]["bad_last8"], 0.26, 2)
+    and near(a[learning]["bad_last8"], 0.07, 2)
+    and near(long_run["mechanism novelty, no learning"]["bad_last8"], 0.06, 2)
+    and near(long_run[learning]["bad_last8"], 0.01, 2),
+)
+check(
+    "mech bench: judged vs nu differ by at most 0.0009",
+    ok=max(
+        abs(
+            g["policies"]["judged novelty, no learning"]["regret"]
+            - g["policies"]["mechanism novelty, no learning"]["regret"]
+        )
+        for g in mb["grid"]
+    )
+    < 0.00095,
+)
+
+
+def vs_commit(cfg: tuple[float, float, int], name: str) -> list[float]:
+    d = cell(*cfg)["policies"][name]
+    return [d["gain_vs_commit_only"], *d["gain_vs_commit_only_ci"]]
+
+
+for cfg, name, want in (
+    ((0.5, 0.05, 24), learning, (0.0009, 0.0001, 0.0018)),
+    ((0.5, 0.05, 24), "+ learning bonus (w = 1)", (0.0014, 0.0006, 0.0022)),
+    ((0.5, 0.2, 24), learning, (-0.0034, -0.0043, -0.0025)),
+    ((0.65, 0.05, 48), learning, (-0.0011, -0.0015, -0.0007)),
+):
+    got = vs_commit(cfg, name)
+    check(
+        f"mech bench vs commit-only {cfg} {name}: {want}",
+        ok=all(near(x, y, 4) for x, y in zip(got, want, strict=True)),
+    )
+strong = [g for g in mb["grid"] if g["base_value"] == 0.65]
+check(
+    "mech bench: innovation slot loses to commit-only whenever B = 0.65",
+    ok=all(g["policies"][learning]["gain_vs_commit_only_ci"][1] < 0 for g in strong),
+)
+check(
+    "mech bench: veto within 0.0008 of commit-only and about half the harm at B = 0.65",
+    ok=all(
+        -0.00085 < g["policies"]["veto untested principles"]["gain_vs_commit_only"] <= 0
+        and g["policies"]["veto untested principles"]["harm"]
+        < 0.55 * g["policies"]["commit only, learning"]["harm"]
+        for g in strong
+    ),
+)
+check(
+    "mech bench: w = 4 never beats w = 1",
+    ok=all(
+        g["policies"]["+ learning bonus (w = 4)"]["regret"]
+        >= g["policies"]["+ learning bonus (w = 1)"]["regret"] - 1e-4
+        for g in mb["grid"]
+    ),
+)
+check(
+    "mech bench: late good-principle share 0.08 -> 0.11 at B = 0.65, T = 48",
+    ok=near(long_run["commit only, learning"]["good_last8"], 0.08, 2)
+    and near(long_run[learning]["good_last8"], 0.11, 2),
 )
 
 sys.exit(1 if failures else 0)

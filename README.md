@@ -4,8 +4,11 @@ Combine calibrated decision models (TypeSafe Jev and its peers) with decision th
 pick high-quality options **and** keep placing bounded bets on new ones.
 
 **Paper:** [Unknown Is Not Risky: Creative Decision Making with Calibrated Decision Models](paper.pdf)
-(`paper.tex`, v0.2.0). It covers the maths with derivations, a synthetic benchmark with held-out
-tuning, and a benchmark on 237 real Jev judgments with known ground truth.
+(`paper.tex`, v0.3.0). It covers the maths with derivations, a synthetic benchmark with held-out
+tuning, a benchmark on 237 real Jev judgments with known ground truth, and, new in v0.3, a mechanism
+layer from creative engineering: a live Jev test of whether novelty follows the working mechanism
+or the wording, and a simulated programme that evaluates learning per principle and the innovation
+slot.
 
 ```
 DIVERGE ─▶ JUDGE ─▶ CALIBRATE ─▶ POOL ─▶ GATE ─▶ VALUE ─▶ SELECT ─▶ LEARN
@@ -30,25 +33,51 @@ or a generative LLM, and convergence belongs to typed judgments plus math you co
 
 ## The math
 
-Three layers, each with stated theorems. **[MATH.md](MATH.md)** maps every claim to its test.
+Four layers, each with stated theorems. **[MATH.md](MATH.md)** maps every claim to its test.
 
 | layer | structure | key results |
 |---|---|---|
 | belief (`simplex`, `belief`) | Aitchison vector space on Δ° | calibration, pooling, debiasing and Bayes are all linear; cyclic orbits remove position bias exactly |
 | value (`lottery`) | exact finite measures on ℝ | coherent CVaR; closed-form fair-tie P(best) via ∫₀¹Π(F+pt)dt; EI monotone in convex order |
-| policy (`decide`) | gates and selection rules | axioms P1–P7: baseline reliability, order, scale and novelty invariance, IIA, risk monotonicity, dominance |
+| policy (`decide`) | gates and selection rules | axioms P1–P8: baseline reliability, order, scale and novelty invariance, IIA, risk monotonicity, dominance, utility-origin invariance |
+| mechanism (`mechanism`) | functions × working principles (morphological chart) | novelty of *how an option works*, invariant to wording (M1); unproven principles go to a prototype test; per-principle Beta beliefs, so one test informs every option sharing the principle (M4); value of a test for later decisions ≤ θ̄(1−θ̄)/(n+1) (M5) |
 
 The central creative mechanism: P(violation) ≈ 0.5 on an unfamiliar option means *unknown*, so it
 becomes **verify** (check before acting, fall back to the status quo if the check fails). The
 downside is bounded by construction, which lets the system back new ideas without betting the
 business.
 
+## Creative engineering (v0.3)
+
+Give the problem a `Morphology`: the functions a solution must perform, a catalogue of working
+principles for each, and the precedents' choices. Jev then classifies each option per function,
+and novelty is measured on the mechanism instead of the wording:
+
+```python
+from cdm import Function, Morphology, Problem
+
+pay = Function(
+    "pay", "collect the monthly fee", {"cash": "cash on a visit", "momo": "mobile money"}
+)
+reach = Function(
+    "reach", "find shop owners", {"door": "visit in person", "referral": "owners refer owners"}
+)
+problem = Problem(
+    ..., morphology=Morphology([reach, pay], record=[{"reach": "door", "pay": "cash"}])
+)
+```
+
+An option built on an unused principle gets ν > 0 and is sent to a prototype test (the
+`mechanism` hard check) rather than vetoed. Record test results with `morphology.update(f, p,
+passed=..., sens=..., spec=...)`, and every option that shares the principle is re-priced.
+`Policy(learning_weight=w)` lets the innovation slot prefer options whose test would teach most.
+
 ## Run
 
 ```bash
 uv sync
 TYPESAFE_API_KEY=... uv run python demo.py   # falls back to MockJudge without a key
-./scripts/check.sh                           # ruff format+lint, mypy --strict, 88 tests, ≥90% branch coverage
+./scripts/check.sh                           # ruff format+lint, mypy --strict, 110 tests, ≥90% branch coverage
 uv run pytest -m live                        # against the real Jev API
 ```
 
@@ -58,6 +87,9 @@ Reproduce the paper:
 uv run python scripts/experiments.py              # synthetic benchmark and sweeps (fixed seeds)
 uv run python scripts/jev_benchmark.py analyze    # Jev benchmark, offline from cached answers
 TYPESAFE_API_KEY=... uv run python scripts/jev_benchmark.py collect   # re-query Jev
+TYPESAFE_API_KEY=... uv run python scripts/mechanism_jev.py collect   # mechanism vs wording, live Jev
+uv run python scripts/mechanism_jev.py analyze    # offline from cached answers
+uv run python scripts/mechanism_benchmark.py      # sequential learning benchmark (~10 min)
 uv run python scripts/figures.py                  # every figure
 uv run python scripts/verify_figures.py           # checks every number the paper quotes
 ```
