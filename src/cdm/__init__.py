@@ -15,6 +15,7 @@ from .judges import JevJudge, MockJudge, judge_problem
 from .lottery import Competitor, Lottery, expected_improvement, expected_max, p_best
 from .mechanism import NEW, Beta, Function, Morphology
 from .model import Constraint, Dimension, Judgment, Option, Problem
+from .programme import Programme
 
 __all__ = [
     "NEW",
@@ -34,6 +35,7 @@ __all__ = [
     "Option",
     "Policy",
     "Problem",
+    "Programme",
     "apply_mechanism",
     "decide",
     "expected_improvement",

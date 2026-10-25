@@ -1,0 +1,36 @@
+  problem 2, history 30: 100/300
+  problem 3, history 30: 100/300
+  problem 1, history 30: 100/300
+  problem 0, history 30: 100/300
+  problem 2, history 30: 200/300
+  problem 3, history 30: 200/300
+  problem 1, history 30: 200/300
+  problem 0, history 30: 200/300
+  problem 2, history 30: 300/300
+  problem 3, history 30: 300/300
+  problem 0, history 30: 300/300
+  problem 1, history 30: 300/300
+  problem 0, history 300: 100/300
+  problem 2, history 300: 100/300
+  problem 1, history 300: 100/300
+  problem 3, history 300: 100/300
+  problem 0, history 300: 200/300
+  problem 2, history 300: 200/300
+  problem 1, history 300: 200/300
+  problem 3, history 300: 200/300
+  problem 0, history 300: 300/300
+  problem 2, history 300: 300/300
+  problem 1, history 300: 300/300
+  problem 3, history 300: 300/300
+
+== history of 30 past uses
+precedent use (v0.3.0)   regret 0.0407±0.0010 harm 0.0644 checked 0.76 settled 0.99 settled-unreliable 0.553 regret gain +0.0000 [+0.0000,+0.0000] harm cut +0.0000 [+0.0000,+0.0000]
+evidence (default)       regret 0.0389±0.0013 harm 0.0343 checked 0.74 settled 0.00 settled-unreliable 0.000 regret gain +0.0018 [-0.0001,+0.0037] harm cut +0.0301 [+0.0278,+0.0323]
+evidence, no history     regret 0.0466±0.0015 harm 0.0300 checked 0.68 settled 0.00 settled-unreliable 0.000 regret gain -0.0060 [-0.0083,-0.0036] harm cut +0.0344 [+0.0321,+0.0367]
+never                    regret 0.0389±0.0013 harm 0.0343 checked 0.74 settled 0.00 settled-unreliable 0.000 regret gain +0.0018 [-0.0001,+0.0037] harm cut +0.0301 [+0.0278,+0.0323]
+
+== history of 300 past uses
+precedent use (v0.3.0)   regret 0.0415±0.0011 harm 0.0630 checked 0.76 settled 0.99 settled-unreliable 0.541 regret gain +0.0000 [+0.0000,+0.0000] harm cut +0.0000 [+0.0000,+0.0000]
+evidence (default)       regret 0.0373±0.0012 harm 0.0374 checked 0.76 settled 0.61 settled-unreliable 0.000 regret gain +0.0043 [+0.0027,+0.0059] harm cut +0.0256 [+0.0233,+0.0279]
+evidence, no history     regret 0.0475±0.0015 harm 0.0309 checked 0.69 settled 0.00 settled-unreliable 0.000 regret gain -0.0059 [-0.0083,-0.0036] harm cut +0.0321 [+0.0298,+0.0345]
+never                    regret 0.0379±0.0012 harm 0.0370 checked 0.76 settled 0.00 settled-unreliable 0.000 regret gain +0.0037 [+0.0020,+0.0053] harm cut +0.0260 [+0.0238,+0.0283]

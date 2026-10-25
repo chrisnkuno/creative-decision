@@ -6,6 +6,7 @@
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{makecell}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{xcolor}
 \usepackage{hyperref}
@@ -57,7 +58,7 @@ times more than a known coin flip. Every property is derived with
 its hypotheses; doing so corrected two over-claimed properties and a tie-handling bug that the
 tests had missed.
 
-The evidence is kept apart by kind. (i) \emph{Implementation}: 112 property-based tests and oracles
+The evidence is kept apart by kind. (i) \emph{Implementation}: 119 property-based tests and oracles
 at $99\%$ branch coverage, and agreement with Monte Carlo. (ii) \emph{A synthetic benchmark} with
 $\tau$ chosen on held-out problems: checking uncertain options beats vetoing them (regret $0.045$
 vs.\ $0.091$, paired gain $[0.041,0.050]$) at about $1\%$ undetected harm, against $17$--$23\%$ for
@@ -77,7 +78,9 @@ Jev's real judgments over sequences of related decisions, the layer halves regre
 ablation shows where the gain comes from: using precedents as evidence ($0.026$, at a cost in harm)
 and learning per principle ($0.012$--$0.014$, which also lowers harm when used alone), not the novelty
 measure itself, which changes nothing. Learning pays while the judge classifies principles better
-than chance, and the innovation pilot adds little.
+than chance, and the innovation pilot adds little. A principle is therefore deployed unchecked only
+when its recorded history proves it reliable (a Cantelli bound); with precedents of mixed reliability
+this lowers both regret and harm (from $6.3\%$ to $3.7\%$) against settling on precedent use.
 \end{abstract}
 
 \noindent\textbf{Keywords:} calibrated decision models, decision theory, Aitchison geometry,
@@ -619,11 +622,12 @@ that observation; it is derived from the structure of $\nu$, not fitted to the d
 
 Let $\theta_{f,p}$ be the rate at which principle $p$ performs $f$ across settings, and
 $Z_{f,p}\sim\mathrm{Bernoulli}(\theta_{f,p})$ whether it does in this one. The belief behind
-$P(Z_{f,p}=1)$ comes, in order of precedence, from \emph{evidence} (a $\mathrm{Beta}(a,b)$ built from
-tests of $p$ for $f$, shared by every option that uses $p$); from \emph{settlement} ($P=1$ if a
-precedent in this setting used $p$ for $f$ and no test contradicts it); or from \emph{opinion}
-($\mathrm{Beta}(s_0(1-r_{i,f}),\,s_0r_{i,f})$ with $s_0=2$ pseudo-observations, for an untested or
-\textsc{new} principle). With independent classifications and distinct pairs per function,
+$P(Z_{f,p}=1)$ comes, in order of precedence, from \emph{settlement} ($P=1$ for a principle that
+counts as proven, below); from \emph{evidence} (a $\mathrm{Beta}(a,b)$ recorded from tests and
+history of $p$ for $f$, shared by every option that uses $p$); or from \emph{opinion}
+($\mathrm{Beta}(s_0(1-r_{i,f})+c_{f,p},\,s_0r_{i,f})$: the judge's estimate held as $s_0=2$
+pseudo-observations, plus one success for each precedent that used $p$). With independent
+classifications and distinct pairs per function,
 \begin{equation}\label{eq:qmech}
 q_i^{\mathrm{mech}}=1-\prod_f\sum_p\pi_{i,f}(p)\,\bar\theta_{i,f,p},
 \end{equation}
@@ -635,6 +639,23 @@ rejected. \textbf{M3.} $q^{\mathrm{mech}}\in[0,1]$, non-decreasing in each $r_{i
 non-increasing in each $\bar\theta$. Interactions between principles (two that work alone but not
 together) are not modelled; $\kappa$ flags the options where that assumption matters most.
 
+\paragraph{When a principle counts as proven.} A settled principle is deployed without a check, so
+settling is the one place where the layer gives up its fallback. In v0.3.0 any principle a precedent
+had used was settled; \S\ref{sec:jevloop} showed that this lowers regret but raises harm whenever
+precedents' principles are less than perfectly reliable. The default rule now settles a principle only
+when its recorded evidence shows it to be reliable:
+\begin{equation}\label{eq:settle}
+\text{settled}(f,p)\iff\mu-\sigma\sqrt{(1-\alpha)/\alpha}\;\ge\;\theta_{\min},
+\end{equation}
+where $\mu,\sigma^2$ are the mean and variance of the recorded $\mathrm{Beta}$, and the defaults are
+$\theta_{\min}=0.95$, $\alpha=0.05$. \textbf{M6.} By Cantelli's inequality, any belief with that mean and
+variance gives $P(\theta<\theta_{\min})\le\alpha$, so a settled principle is reliable with confidence at
+least $1-\alpha$ whatever the shape of the belief. The rule is demanding: a principle needs about a
+hundred recorded uses with almost no failures, and use by precedents without a recorded history
+proves nothing. It is \texttt{Morphology(settle="evidence")}; \texttt{"precedent"} restores the
+v0.3.0 rule and \texttt{"never"} checks every principle. The experiments of
+\S\S\ref{sec:mechjev}--\ref{sec:jevloop} use the v0.3.0 rule; \S\ref{sec:settle} compares the rules.
+
 \subsection{Learning across decisions: what one prototype test teaches}\label{sec:learning}
 
 Proposition~\ref{prop:voc} showed that within one decision only $\bar q$ matters, and that the
@@ -644,7 +665,11 @@ $\theta$, so the posterior is a mixture of $\mathrm{Beta}(a+1,b)$ and $\mathrm{B
 the Beta with the same mean and variance. \textbf{M4.} This update is exact (conjugate) for
 $s=c=1$, leaves the belief unchanged when the test is uninformative ($s+c=1$), and preserves the
 exact posterior mean, which by Proposition~\ref{prop:voc} is all that the next single decision
-uses. The next proposition prices what one test teaches.
+uses. In code, a \texttt{Programme} keeps the morphology across decisions; each reported test or
+observed outcome is credited to the principles the option uses, per function where results are per
+function, and not credited at all for a function whose modal principle has probability below $0.5$,
+since blaming an uncertain classification is how misattribution enters (\S\ref{sec:robust}). The
+next proposition prices what one test teaches.
 
 \begin{proposition}[Value of one test for the next decision]\label{prop:m5}
 Let $\theta\sim\mathrm{Beta}(a,b)$ with $n=a+b$ and $\bar\theta=a/n$, and let a later decision gain
@@ -683,8 +708,8 @@ $\bar\theta(1-\bar\theta)/(n+1)$; ignorance ($n=2$) is worth $34$ times a known 
 
 \subsection{What each piece of evidence supports}
 
-We report eleven kinds of evidence. Table~\ref{tab:evidence} states what each supports and what it
-does not; five of them compare decision rules, and five use a real judge.
+We report twelve kinds of evidence. Table~\ref{tab:evidence} states what each supports and what it
+does not; six of them compare decision rules, and six use a real judge.
 
 \begin{table}[h]
 \centering\small
@@ -715,6 +740,8 @@ robustness sweep (\S\ref{sec:robust}) & which assumptions the learning gain depe
 values those assumptions take in practice \\
 Jev in the loop (\S\ref{sec:jevloop}) & which component of the layer improves sequential decisions
 when the judgments about mechanisms are real & real outcomes, which are simulated \\
+settling rules (\S\ref{sec:settle}) & which rule for treating precedents as proven trades regret
+against harm best, when precedents differ in reliability & real precedent reliabilities \\
 \bottomrule
 \end{tabular}
 \caption{Evidence and its limits.}
@@ -725,7 +752,7 @@ when the judgments about mechanisms are real & real outcomes, which are simulate
 
 Every numbered claim has a property-based test (Hypothesis); L4/L5 also have a brute-force oracle
 over joint outcomes, and \texttt{MATH.md} maps claims to tests. The gate runs \texttt{ruff},
-\texttt{mypy --strict} and \texttt{pytest} with a 90\% branch-coverage floor. \textbf{112 tests pass
+\texttt{mypy --strict} and \texttt{pytest} with a 90\% branch-coverage floor. \textbf{119 tests pass
 at 99\% branch coverage}, plus one live test against the Jev API.
 
 Testing and derivation found real defects, which we list because they bear on how much a passing
@@ -1263,6 +1290,58 @@ really are; where that is in doubt, record them as evidence instead, which keeps
 and the lower harm.
 
 
+\subsection{When should a precedent's principle count as proven? (Jev in the loop)}\label{sec:settle}
+
+\paragraph{Precedents of mixed reliability.} The settled rule matters most when precedents differ
+in how reliable they are. We rerun the Jev-in-the-loop experiment with every policy learning per
+principle, but each principle that a precedent used now works with $\theta=0.995$ (half of them) or
+$\theta\sim U(0.7,0.9)$, and has a history of $n$ past uses with $\mathrm{Binomial}(n,\theta)$
+successes. Four rules are compared: the v0.3.0 rule (settle on precedent use; the history is not
+recorded); the evidence rule \eqref{eq:settle} with the history recorded as evidence (the new
+default); the same rule with nothing recorded; and never settling, with the history recorded.
+$n\in\{30,300\}$; 300 worlds for each of the four problems.
+
+\begin{table}[h]
+\centering\small
+\setlength{\tabcolsep}{3pt}
+\footnotesize
+\begin{tabular}{@{}llccccc@{}}
+\toprule
+history & rule & regret ($\pm$se) & harm & settled & \makecell{settled,\\unreliable} & \makecell{regret gain\\vs.\ v0.3.0} \\
+\midrule
+300 uses & v0.3.0 (precedent use) & $0.0415\pm0.0011$ & 6.3\% & 0.99 & 0.54 & --- \\
+& evidence, history recorded & $0.0373\pm0.0012$ & 3.7\% & 0.61 & 0.00 & $+0.0043$ [$0.0027,0.0059$] \\
+& never, history recorded & $0.0379\pm0.0012$ & 3.7\% & 0.00 & 0.00 & $+0.0037$ [$0.0020,0.0053$] \\
+& evidence, nothing recorded & $0.0475\pm0.0015$ & 3.1\% & 0.00 & 0.00 & $-0.0059$ [$-0.0083,-0.0036$] \\
+\midrule
+30 uses & v0.3.0 (precedent use) & $0.0407\pm0.0010$ & 6.4\% & 0.99 & 0.55 & --- \\
+& evidence, history recorded & $0.0389\pm0.0013$ & 3.4\% & 0.00 & 0.00 & $+0.0018$ [$-0.0001,0.0037$] \\
+\bottomrule
+\end{tabular}
+\caption{Settling rules on Jev's real mechanism judgments, with precedents of mixed reliability
+(1200 simulated worlds per history length; paired intervals). ``Settled'': share of commitments that
+use a settled principle; ``settled, unreliable'': share that use a settled principle with
+$\theta<0.95$. With 30 past uses the evidence rule settles nothing, so it equals never settling.}
+\label{tab:settle}
+\end{table}
+
+\paragraph{The evidence rule lowers regret and harm together.} (1) \emph{The v0.3.0 rule settles
+unreliable principles}: more than half of its commitments rely on a principle with $\theta<0.95$ that
+is never checked, and its harm is $6.3$--$6.4\%$. (2) \emph{The evidence rule never settled an
+unreliable principle} and, with a 300-use history, settled the reliable ones (61\% of commitments use
+one). Against the v0.3.0 rule it lowers regret by $0.0043$ $[0.0027,0.0059]$ and harm by $2.6$ points
+$[2.3,2.8]$, from $6.3\%$ to $3.7\%$. (3) \emph{Settling the reliable principles is worth little beyond
+checking everything}: never settling, with the same history, is within $0.0006$ in regret and equal
+in harm, because a check of a reliable principle almost always passes. The value of the rule is in
+what it refuses to settle. (4) \emph{Thirty past uses prove nothing}: no principle clears the bound,
+so the rule checks everything; harm still falls to $3.4\%$ and regret does not rise ($+0.0018$
+$[-0.0001,0.0037]$). (5) \emph{Recording history matters}: with nothing recorded, harm is lowest
+($3.1\%$) but regret is $0.006$ above the v0.3.0 rule's and $0.010$ above the recorded rule's, because the history is what tells reliable precedents
+from unreliable ones. Where every precedent is reliable, the v0.3.0 rule and the evidence rule with a
+long history settle the same principles; where precedents are known only by name, the evidence rule
+checks them, which \S\ref{sec:jevloop} showed costs regret and saves harm. \emph{Caveats:} reliability
+here is bimodal by construction, and outcomes are simulated.
+
 \subsection{Bias recovery}\label{sec:biasrec}
 
 An audit of Jev reported Choice and Score questions as overconfident ($T\approx1.3$), Noul as
@@ -1335,7 +1414,9 @@ open question. The mechanism layer makes novelty a property of a design's workin
 rather than its wording, which a real judge can supply reliably, and turns precedents and prototype
 tests into evidence about every option that shares a principle. On Jev's real judgments that
 evidence, not the novelty score, is what improves decisions: it halves regret against v0.2, and the
-learning part of it pays as long as the judge classifies principles better than chance. The math is derived and
+learning part of it pays as long as the judge classifies principles better than chance. Treating a
+precedent's principle as proven only when its recorded history shows it reliable keeps most of
+that gain and removes most of the harm the earlier rule added. The math is derived and
 tested; whether the policy makes better real decisions remains to be measured.
 
 \paragraph{Reproducibility.} Source, tests and the configuration behind every number here:
@@ -1348,8 +1429,9 @@ from source with \texttt{uv sync}; the name \texttt{cdm} on PyPI belongs to an u
 \texttt{TYPESAFE\_API\_KEY}); \texttt{analyze} reruns the analysis offline from the cached answers;
 \item \texttt{mechanism\_jev.py} and \texttt{mechanism\_disguise.py} in \texttt{scripts/}
 (\texttt{collect} needs the key; \texttt{analyze} is offline): the wording tests;
-\item \texttt{mechanism\_benchmark.py}, \texttt{mechanism\_robustness.py} and
-\texttt{mechanism\_jevloop.py} (run with \texttt{PYTHONPATH=scripts}): the sequential experiments;
+\item the sequential experiments, run with \texttt{PYTHONPATH=scripts}:\\
+\texttt{mechanism\_benchmark.py}, \texttt{mechanism\_robustness.py},\\
+\texttt{mechanism\_jevloop.py} and \texttt{mechanism\_settle.py};
 \item \texttt{uv run python scripts/figures.py}: every figure, and \texttt{scripts/verify\_figures.py}
 cross-checks every number quoted from them;
 \item \texttt{uv run python demo.py}: the live example (needs \texttt{TYPESAFE\_API\_KEY}; it falls
@@ -1501,6 +1583,11 @@ under success and $1-\bar\theta$ times that under failure. For $s=c=1$ one weigh
 (conjugacy). If $s+c=1$ the likelihood does not depend on $\theta$ and the posterior is the prior.
 The stored Beta has the mixture's first two moments, which exist and satisfy
 $\mathrm{Var}<\mu(1-\mu)$ for any non-degenerate law on $[0,1]$, so its parameters are positive.
+
+\textbf{M6.} Cantelli's inequality states $P(X-\mu\le-k\sigma)\le1/(1+k^2)$ for any random variable
+with mean $\mu$ and standard deviation $\sigma$. With $k=\sqrt{(1-\alpha)/\alpha}$, $1/(1+k^2)=\alpha$, so
+$\mu-k\sigma\ge\theta_{\min}$ implies $P(\theta<\theta_{\min})\le P(\theta\le\mu-k\sigma)\le\alpha$.
+The test checks the bound against the exact Beta quantile.
 
 \textbf{Proposition~\ref{prop:m5}.} After one observation the posterior mean is $m_1=(a+1)/(n+1)$
 with probability $\bar\theta$ and $m_0=a/(n+1)$ otherwise; $\mathbb E[M]=\bar\theta$ and

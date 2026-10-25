@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from dataclasses import replace
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pytest
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
+from scipy.stats import beta as beta_dist  # type: ignore[import-untyped]
 
 from cdm import (
     NEW,
@@ -21,12 +24,18 @@ from cdm import (
     Option,
     Policy,
     Problem,
+    Programme,
     decide,
     judge_problem,
 )
 from cdm.decide import MECHANISM, apply_mechanism, mechanism_gate
 from cdm.judges import build_questions
-from cdm.mechanism import next_decision_value, next_decision_value_bound, shared_principles
+from cdm.mechanism import (
+    lower_bound,
+    next_decision_value,
+    next_decision_value_bound,
+    shared_principles,
+)
 from cdm.simplex import Vec
 
 from .judgments import judgment, point, problem
@@ -176,6 +185,7 @@ def test_m4_tests_update_the_shared_belief() -> None:
     after = m.works(m.classification({"reach": "door", "pay": "momo"}), risk)
     assert m.evidence[("pay", "momo")].mean < 0.5
     assert after < before  # a different option that shares the principle is now riskier
+    m = morph(settle="precedent")
     assert m.settled("pay", "cash")
     m.update("pay", "cash", passed=False)
     assert not m.settled("pay", "cash")
@@ -209,8 +219,8 @@ def test_m5_ignorance_teaches_more_than_a_known_coin() -> None:
 
 
 # Policy hand-off ---------------------------------------------------------------------------
-def scenario_with_mechanisms() -> tuple[Problem, list[Judgment]]:
-    pr = replace(problem(hard=("harm",), soft=()), morphology=morph())
+def scenario_with_mechanisms(settle: str = "precedent") -> tuple[Problem, list[Judgment]]:
+    pr = replace(problem(hard=("harm",), soft=()), morphology=morph(settle=settle))
     m = pr.morphology
     if m is None:
         raise AssertionError
@@ -285,7 +295,7 @@ def test_contracts() -> None:
         Beta(0, 1)
     with pytest.raises(ValueError, match="probability zero"):
         Beta(1, 1).observe_test(passed=True, sens=1.0, spec=0.0)
-    with pytest.raises(ValueError, match="untested"):
+    with pytest.raises(ValueError, match="no evidence"):
         morph().belief("pay", NEW)
     with pytest.raises(ValueError, match="catalogue"):
         morph().update("pay", NEW, passed=True)
@@ -305,7 +315,7 @@ def test_shared_principles_counts_the_reach_of_a_test() -> None:
 
 
 def test_learning_value_prefers_untested_principles() -> None:
-    m = morph()
+    m = morph(settle="precedent")
     tested = m.classification({"reach": "door", "pay": "cash"})
     untested = m.classification({"reach": "door", "pay": "momo"})
     assert m.learning(untested, {}) > m.learning(tested, {}) == 0.0
@@ -358,3 +368,98 @@ def test_mechanism_novelty_uses_its_own_gate() -> None:
     assert d.innovation == "momo"  # ν = 1/3 passes the mechanism gate although min_novelty = 0.99
     strict = Policy(downside_tolerance=1.0, min_mechanism_novelty=0.9)
     assert decide(pr, js, strict).innovation is None
+
+
+# M6 and the settle rules -------------------------------------------------------------------
+@settings(max_examples=200, deadline=None)
+@given(beta, st.floats(0.01, 0.5))
+def test_m6_cantelli_bound_is_below_the_exact_quantile(b: Beta, alpha: float) -> None:
+    assert lower_bound(b, alpha) <= beta_dist.ppf(alpha, b.a, b.b) + 1e-12
+
+
+def test_precedent_use_alone_does_not_prove_a_principle() -> None:
+    m = morph()
+    assert not m.settled("pay", "cash")  # two precedents used it, but nothing was measured
+    b = m.belief("pay", "cash", 0.2)
+    if b is None:
+        raise AssertionError
+    assert (b.a, b.b) == pytest.approx((2 * 0.8 + 2, 2 * 0.2))  # judge's estimate + one per use
+    m.evidence[("pay", "cash")] = Beta(400, 1)  # a long record of it working
+    assert m.settled("pay", "cash")
+    m.evidence[("pay", "card")] = Beta(20, 1)  # promising, but too little to prove
+    assert not m.settled("pay", "card")
+    for _ in range(3):
+        m.update("pay", "cash", passed=False)
+    assert m.settled("pay", "cash")  # 3 failures in 403 still clear the bound
+    for _ in range(12):
+        m.update("pay", "cash", passed=False)
+    assert not m.settled("pay", "cash")  # 15 in 415 do not
+    assert not morph(settle="never", evidence={("pay", "cash"): Beta(1e6, 1)}).settled(
+        "pay", "cash"
+    )
+
+
+def test_default_rule_checks_a_reworded_precedent_until_it_is_proven() -> None:
+    pr, js = scenario_with_mechanisms(settle="evidence")
+    assert decide(pr, js).by_id("reword").status == "verify"
+    m = pr.morphology
+    if m is None:
+        raise AssertionError
+    m.evidence[("reach", "door")] = Beta(500, 1)
+    m.evidence[("pay", "cash")] = Beta(500, 1)
+    assert decide(pr, js).by_id("reword").status == "clear"
+
+
+def test_tests_are_credited_to_the_principles_the_option_uses() -> None:
+    m = morph()
+    pi = m.classification({"reach": "ads", "pay": "momo"})
+    assert m.to_test(pi) == [("reach", "ads"), ("pay", "momo")]
+    assert m.record_test(pi, passed={"pay": False}) == [("pay", "momo")]
+    assert ("reach", "ads") not in m.evidence
+    assert m.record_test(pi, passed=True) == [("reach", "ads"), ("pay", "momo")]
+    unsure = {"reach": np.array([0.4, 0.35, 0.25]), "pay": pi["pay"]}
+    assert m.to_test(unsure)[0] == ("reach", NEW)  # too unsure to blame a principle
+    assert m.record_test(unsure, passed=False) == [("pay", "momo")]
+    m.evidence[("pay", "cash")] = Beta(500, 1)
+    assert m.to_test(m.classification({"reach": "door", "pay": "cash"})) == [("reach", "door")]
+
+
+def test_morphology_round_trips_through_json() -> None:
+    m = morph(settle="never", familiar_after=None)
+    m.update("pay", "momo", passed=False, sens=0.9, spec=0.95)
+    back = Morphology.from_dict(json.loads(json.dumps(m.to_dict())))
+    assert back.to_dict() == m.to_dict()
+    assert back.evidence[("pay", "momo")] == m.evidence[("pay", "momo")]
+
+
+def test_programme_learns_across_decisions(tmp_path: Path) -> None:
+    pr, js = scenario_with_mechanisms(settle="evidence")
+    m = pr.morphology
+    if m is None:
+        raise AssertionError
+    prog = Programme(m, Policy(check_sensitivity=0.9, check_specificity=0.95))
+    d = prog.decide(pr, js)
+    momo = d.by_id("momo")
+    assert ("pay", "momo") in momo.tests
+    before = momo.mean
+    assert prog.report("momo", passed={"pay": False}) == [("pay", "momo")]
+    after = prog.decide(pr, js).by_id("momo").mean
+    assert after < before  # the next decision prices the failed principle
+    prog.report("reword", passed=True, checked=False)
+    assert m.evidence[("reach", "door")] == Beta(1 + 3, 1).observe(works=True)
+    prog.save(tmp_path / "p.json")
+    back = Programme.load(tmp_path / "p.json")
+    assert back.morphology.to_dict() == m.to_dict()
+    assert len(back.history) == 2
+    with pytest.raises(KeyError, match="not an option"):
+        prog.report("nope", passed=True)
+    prog.decide(pr, [replace(js[0], mechanism={}), js[2]])
+    with pytest.raises(ValueError, match="no mechanism"):
+        prog.report("base", passed=True)
+
+
+def test_settle_contracts() -> None:
+    with pytest.raises(ValueError, match="settle is"):
+        morph(settle="sometimes")
+    with pytest.raises(ValueError, match="settle_alpha"):
+        morph(settle_alpha=1.5)

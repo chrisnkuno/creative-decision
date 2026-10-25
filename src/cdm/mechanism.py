@@ -27,10 +27,16 @@ Feasibility. θ_{f,p} is the rate at which principle p performs f across setting
 Bernoulli(θ_{f,p}) says whether it works in this one. The judge's r_{i,f} is P(the way option i
 performs f fails here). In order of precedence, the belief behind P(Z_{f,p} = 1) is
 
+    settled   P = 1 for a principle that counts as proven (below)
     evidence  a Beta(a, b) recorded from tests of p for f (shared by every option that uses p)
-    settled   P = 1 if a precedent in this setting used p for f and nothing contradicts it
-    opinion   Beta(s₀(1 − r_{i,f}), s₀ r_{i,f}), s₀ = `prior_strength`, for an untested or a NEW
-              principle: the judge's estimate, held as s₀ pseudo-observations
+    opinion   Beta(s₀(1 − r_{i,f}) + c_{f,p}, s₀ r_{i,f}), s₀ = `prior_strength`: the judge's
+              estimate held as s₀ pseudo-observations, plus one success per precedent that used p
+
+A principle counts as proven (`settle`) by default only if its recorded evidence gives
+θ ≥ `settle_above` with confidence 1 − `settle_alpha` by Cantelli's inequality, which holds for any
+law with the Beta's mean and variance: μ − σ·sqrt((1 − α)/α) ≥ settle_above. Precedent use alone
+does not prove a principle, because a settled principle is deployed without a check. "precedent"
+restores the v0.3.0 rule (any precedent use, until a test is recorded); "never" checks everything.
 
 With independent classifications and distinct (f, p) per function,
 
@@ -56,6 +62,8 @@ Theorems (tests/test_mechanism.py):
   M4  Beta updates: perfect observations are conjugate; `observe_test` preserves the exact
       posterior mean and variance; an uninformative test leaves the belief unchanged; the
       predictive P(pass) is θ̄c + (1 − θ̄)(1 − s).
+  M6  The settled rule is conservative: settled ⇒ P(θ < settle_above) ≤ settle_alpha under the
+      recorded belief, for any distribution with its mean and variance.
   M5  (one test, next decision) If the next decision acts on p's option iff E[θ] ≥ t, with gain
       α(E[θ] − t), a perfect test raises its expected value by at most α θ̄(1 − θ̄)/(n + 1),
       attained at t = θ̄; the test can change that decision only if t lies in an interval of
@@ -64,8 +72,10 @@ Theorems (tests/test_mechanism.py):
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
@@ -147,6 +157,12 @@ def _second_moment(b: Beta) -> float:
     return b.a * (b.a + 1) / (b.n * (b.n + 1))
 
 
+def lower_bound(belief: Beta, alpha: float) -> float:
+    """A value θ exceeds with probability at least 1 − α under any law with this mean and
+    variance (Cantelli's inequality): μ − σ·sqrt((1 − α)/α)."""
+    return belief.mean - math.sqrt(belief.var) * math.sqrt((1 - alpha) / alpha)
+
+
 def next_decision_value_bound(belief: Beta, alpha: float = 1.0) -> float:
     """M5: the most a perfect test of θ can add to one later decision with slope α."""
     return alpha * belief.mean * (1 - belief.mean) / (belief.n + 1)
@@ -169,6 +185,14 @@ class Morphology:
     evidence: dict[tuple[str, str], Beta] = field(default_factory=dict)
     prior_strength: float = 2.0  # s₀: pseudo-observations behind a judge's estimate
     familiar_after: int | None = 1  # m_f; None gives Shah's rarity (m_f = C_f)
+    # When a principle counts as proven, so that options using it are not checked:
+    #   "evidence"   its recorded evidence puts θ above `settle_above` with confidence
+    #                1 − `settle_alpha` (Cantelli bound); precedent use alone is not enough
+    #   "precedent"  any precedent in this setting used it and no test has been recorded (v0.3.0)
+    #   "never"      every principle is checked
+    settle: str = "evidence"
+    settle_above: float = 0.95
+    settle_alpha: float = 0.05
 
     def __post_init__(self) -> None:
         ids = [f.id for f in self.functions]
@@ -180,6 +204,10 @@ class Morphology:
             raise ValueError("function weights must be non-negative with a positive sum")
         if self.familiar_after is not None and self.familiar_after < 1:
             raise ValueError("familiar_after must be at least 1, or None for Shah's rarity")
+        if self.settle not in {"evidence", "precedent", "never"}:
+            raise ValueError("settle is 'evidence', 'precedent' or 'never'")
+        if not (0 < self.settle_alpha < 1 and 0 < self.settle_above <= 1):
+            raise ValueError("settle_alpha ∈ (0, 1) and settle_above ∈ (0, 1]")
         known = {f.id: f.principles for f in self.functions}
         for r in self.record:
             for fid, p in r.items():
@@ -202,18 +230,28 @@ class Morphology:
         return 1.0 - min(1.0, self.uses(fid, p) / familiar)
 
     def settled(self, fid: str, p: str) -> bool:
-        """A precedent in this setting used p for f, and no test evidence has been recorded."""
-        return p != NEW and (fid, p) not in self.evidence and self.uses(fid, p) > 0
+        """Whether p counts as proven for f, so that options using it are not checked."""
+        if p == NEW or self.settle == "never":
+            return False
+        if self.settle == "precedent":
+            return (fid, p) not in self.evidence and self.uses(fid, p) > 0
+        b = self.evidence.get((fid, p))
+        return b is not None and lower_bound(b, self.settle_alpha) >= self.settle_above
 
     def belief(self, fid: str, p: str, risk: float | None = None) -> Beta | None:
-        """The Beta behind θ_{f,p}, or None when settled. `risk` is the judge's r_{i,f}."""
-        if p != NEW and (fid, p) in self.evidence:
-            return self.evidence[(fid, p)]
+        """The Beta behind θ_{f,p}, or None when settled. `risk` is the judge's r_{i,f}.
+
+        Recorded evidence is shared by every option. Without it, the judge's estimate is held as
+        s₀ pseudo-observations, and each precedent that used p for f adds one success.
+        """
         if self.settled(fid, p):
             return None
+        if p != NEW and (fid, p) in self.evidence:
+            return self.evidence[(fid, p)]
         if risk is None:
-            raise ValueError(f"{fid}/{p} is untested: its belief needs the judge's risk estimate")
-        return Beta.of_mean(1.0 - risk, self.prior_strength)
+            raise ValueError(f"{fid}/{p} has no evidence: its belief needs the judge's estimate")
+        opinion = Beta.of_mean(1.0 - risk, self.prior_strength)
+        return Beta(opinion.a + (0 if p == NEW else self.uses(fid, p)), opinion.b)
 
     def theta(self, fid: str, p: str, risk: float) -> float:
         b = self.belief(fid, p, risk)
@@ -304,6 +342,83 @@ class Morphology:
             uses = self.uses(fid, p)
             start = Beta(1.0 + uses, 1.0) if uses else (prior or Beta(1.0, 1.0))
         self.evidence[(fid, p)] = start.observe_test(passed=passed, sens=sens, spec=spec)
+
+    def to_test(
+        self, pi: Mapping[str, Vec], *, min_confidence: float = 0.5
+    ) -> list[tuple[str, str]]:
+        """The (function, principle) pairs a prototype test of this option has to cover.
+
+        One pair per function whose modal principle is not settled; NEW included. A function
+        whose modal principle has probability below `min_confidence` is listed as NEW, because a
+        test cannot be credited to a principle the judge is unsure about.
+        """
+        self._check(pi)
+        out = []
+        for f in self.functions:
+            k = int(np.argmax(pi[f.id]))
+            p = f.labels()[k] if pi[f.id][k] >= min_confidence else NEW
+            if not self.settled(f.id, p):
+                out.append((f.id, p))
+        return out
+
+    def record_test(
+        self,
+        pi: Mapping[str, Vec],
+        *,
+        passed: bool | Mapping[str, bool],
+        sens: float = 1.0,
+        spec: float = 1.0,
+        min_confidence: float = 0.5,
+    ) -> list[tuple[str, str]]:
+        """Credit a test of an option to the principles it uses; returns the pairs updated.
+
+        `passed` is one result for the whole option, or one per function. A whole-option failure
+        is recorded against every unsettled principle of the option, which may blame a principle
+        that worked; per-function results avoid that. NEW principles are not recorded.
+        """
+        results = passed if isinstance(passed, Mapping) else None
+        done = []
+        for fid, p in self.to_test(pi, min_confidence=min_confidence):
+            if p == NEW or (results is not None and fid not in results):
+                continue
+            ok = bool(passed) if results is None else bool(results[fid])
+            self.update(fid, p, passed=ok, sens=sens, spec=spec)
+            done.append((fid, p))
+        return done
+
+    def to_dict(self) -> dict[str, Any]:
+        """A JSON-ready snapshot, so that evidence carries over between sessions."""
+        return {
+            "functions": [
+                {
+                    "id": f.id,
+                    "description": f.description,
+                    "principles": f.principles,
+                    "weight": f.weight,
+                }
+                for f in self.functions
+            ],
+            "record": self.record,
+            "evidence": [[f, p, b.a, b.b] for (f, p), b in sorted(self.evidence.items())],
+            "prior_strength": self.prior_strength,
+            "familiar_after": self.familiar_after,
+            "settle": self.settle,
+            "settle_above": self.settle_above,
+            "settle_alpha": self.settle_alpha,
+        }
+
+    @classmethod
+    def from_dict(cls, d: Mapping[str, Any]) -> Morphology:
+        return cls(
+            functions=[Function(**f) for f in d["functions"]],
+            record=[dict(r) for r in d["record"]],
+            evidence={(f, p): Beta(a, b) for f, p, a, b in d["evidence"]},
+            prior_strength=d["prior_strength"],
+            familiar_after=d["familiar_after"],
+            settle=d["settle"],
+            settle_above=d["settle_above"],
+            settle_alpha=d["settle_alpha"],
+        )
 
     def classification(self, choice: Mapping[str, str]) -> dict[str, Vec]:
         """A certain classification, e.g. for the status quo or a hand-labelled option."""

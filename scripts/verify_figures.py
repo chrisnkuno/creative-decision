@@ -582,4 +582,46 @@ check(
     ok=pol["veto untested"]["regret"] == max(r["regret"] for r in pol.values()),
 )
 
+ms = json.loads(Path("paper_figs/mechanism_settle.json").read_text())
+check("settle: 4 problems x 300 worlds", ok=ms["problems"] == 4 and ms["runs_per_problem"] == 300)
+for hist, rule, (reg, se, harm, settled, bad, gain, lo, hi) in (
+    ("300", "precedent use (v0.3.0)", (0.0415, 0.0011, 0.063, 0.99, 0.54, 0.0, 0.0, 0.0)),
+    ("300", "evidence (default)", (0.0373, 0.0012, 0.037, 0.61, 0.00, 0.0043, 0.0027, 0.0059)),
+    ("300", "never", (0.0379, 0.0012, 0.037, 0.00, 0.00, 0.0037, 0.0020, 0.0053)),
+    ("300", "evidence, no history", (0.0475, 0.0015, 0.031, 0.00, 0.00, -0.0059, -0.0083, -0.0036)),
+    ("30", "precedent use (v0.3.0)", (0.0407, 0.0010, 0.064, 0.99, 0.55, 0.0, 0.0, 0.0)),
+    ("30", "evidence (default)", (0.0389, 0.0013, 0.034, 0.00, 0.00, 0.0018, -0.0001, 0.0037)),
+):
+    d = ms["by_history"][hist][rule]
+    check(
+        f"settle table: {hist} uses, {rule}",
+        ok=near(d["regret"], reg, 4)
+        and near(d["regret_se"], se, 4)
+        and near(d["harm"], harm, 3)
+        and near(d["settled_any"], settled, 2)
+        and near(d["settled_unreliable"], bad, 2)
+        and near(d["regret_gain_vs_precedent"], gain, 4)
+        and near(d["regret_gain_ci"][0], lo, 4)
+        and near(d["regret_gain_ci"][1], hi, 4),
+    )
+e300 = ms["by_history"]["300"]
+ev = e300["evidence (default)"]
+check(
+    "settle: harm cut 2.6 points [2.3, 2.8]; never within 0.0006; no-history 0.010 above recorded",
+    ok=near(ev["harm_reduction_vs_precedent"], 0.026, 3)
+    and near(ev["harm_reduction_ci"][0], 0.023, 3)
+    and near(ev["harm_reduction_ci"][1], 0.028, 3)
+    and near(e300["never"]["regret"] - ev["regret"], 0.0006, 4)
+    and near(e300["evidence, no history"]["regret"] - ev["regret"], 0.010, 3),
+)
+check(
+    "settle: the evidence rule never settled an unreliable principle",
+    ok=all(
+        b[r]["settled_unreliable"] == 0.0
+        for b in ms["by_history"].values()
+        for r in b
+        if r != "precedent use (v0.3.0)"
+    ),
+)
+
 sys.exit(1 if failures else 0)

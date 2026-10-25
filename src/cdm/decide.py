@@ -134,6 +134,7 @@ class OptionStats:
     baseline: bool = False
     combination: float = 0.0  # κ: P(the combination of principles is in no precedent)
     learning: float = 0.0
+    tests: list[tuple[str, str]] = field(default_factory=list)  # principles a prototype must cover
 
 
 @dataclass
@@ -334,6 +335,13 @@ def decide(problem: Problem, judgments: list[Judgment], policy: Policy | None = 
                 race=entry,
             )
         )
+
+    if problem.morphology is not None:
+        by_id = {j.option.id: j for j in judgments}
+        for st in stats:
+            jm = by_id.get(st.id)
+            if jm is not None and jm.mechanism and not st.baseline and st.status == "verify":
+                st.tests = problem.morphology.to_test(jm.mechanism)
 
     base_i = next(i for i, s in enumerate(stats) if s.baseline)
     floor = stats[base_i].cvar - pol.downside_tolerance

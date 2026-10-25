@@ -314,7 +314,7 @@ KIND = ("precedent", "precedent", "catalogue", "catalogue", "catalogue", "new", 
 
 
 def morphology(d: dict[str, Any]) -> Morphology:
-    return Morphology(list(d["functions"]), [dict(r) for r in d["record"]])
+    return Morphology(list(d["functions"]), [dict(r) for r in d["record"]], settle="precedent")
 
 
 def items(d: dict[str, Any], di: int) -> list[dict[str, Any]]:

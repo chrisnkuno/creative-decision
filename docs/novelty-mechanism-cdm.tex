@@ -87,13 +87,26 @@ learning value & $\Lambda_i=\sum_f\sum_p\pi_{i,f}(p)\,\bar\theta(1-\bar\theta)/(
 
 \noindent The reliability belief for a principle comes from the first applicable source:
 \begin{enumerate}
-\item \emph{Evidence}: a $\mathrm{Beta}(a,b)$ built from test reports about that principle, shared by
-all options that use it.
-\item \emph{Settled}: probability 1 if a precedent in this setting used the principle for the
-function and no test has contradicted it.
-\item \emph{Opinion}: $\mathrm{Beta}(2(1-r_{i,f}),\,2r_{i,f})$, the judge's estimate held as two
-pseudo-observations.
+\item \emph{Settled}: probability 1, for a principle proven reliable (below). Options that use only
+settled principles are deployed without a check.
+\item \emph{Evidence}: a $\mathrm{Beta}(a,b)$ recorded from tests and from precedents' history,
+shared by all options that use the principle.
+\item \emph{Opinion}: $\mathrm{Beta}(2(1-r_{i,f})+c_{f,p},\,2r_{i,f})$, the judge's estimate held as
+two pseudo-observations, plus one success for each precedent that used the principle.
 \end{enumerate}
+
+\subsection*{When a principle counts as proven}
+A principle is settled only if its recorded evidence satisfies
+\[
+\mu-\sigma\sqrt{(1-\alpha)/\alpha}\;\ge\;\theta_{\min}\qquad(\theta_{\min}=0.95,\ \alpha=0.05),
+\]
+where $\mu$ and $\sigma$ are the mean and standard deviation of its recorded Beta. By Cantelli's
+inequality this guarantees $P(\theta<\theta_{\min})\le\alpha$ for any belief with that mean and
+variance. In practice a principle needs on the order of a hundred recorded uses with almost no
+failures. Use by precedents without a recorded history proves nothing: record their track record
+with \texttt{morphology.evidence[(f, p)] = Beta(successes + 1, failures + 1)}. The v0.3.0 rule, which
+settled any principle a precedent had used, is available as
+\texttt{Morphology(settle="precedent")}; \texttt{settle="never"} checks everything.
 
 \section{Effect on decisions}
 
@@ -135,9 +148,12 @@ $0.5$.}
 
 \section{Usage}
 
+Related decisions should run through a \texttt{Programme}, which keeps the evidence about each
+principle and credits every reported test to the principles the option uses.
+
 \begin{lstlisting}[language=Python]
-from cdm import (Function, JevJudge, Morphology, Policy, Problem,
-                 decide, judge_problem)
+from cdm import (Beta, Function, JevJudge, Morphology, Policy, Problem,
+                 Programme, judge_problem)
 
 reach = Function("reach", "find shop owners and convince them to sign up", {
     "door": "Staff visit shops in person",
@@ -146,27 +162,33 @@ pay = Function("pay", "collect the monthly fee from shops", {
     "cash": "Cash collected during a visit",
     "momo": "Payment from the owner's mobile-money wallet"})
 morph = Morphology([reach, pay], record=[{"reach": "door", "pay": "cash"}])
+# 412 past visits, 3 failed: enough to prove door-to-door reliable
+morph.evidence[("reach", "door")] = Beta(410, 4)
 
 problem = Problem(goal=..., context=..., options=[...],
                   dimensions=[...], morphology=morph)
-# the judge is asked the mechanism questions as well
+programme = Programme(morph, Policy(check_sensitivity=0.9,
+                                    check_specificity=0.95))
 judgments = await judge_problem(problem, [JevJudge()])
-# the mechanism check is applied inside decide
-decision = decide(problem, judgments, Policy())
+decision = programme.decide(problem, judgments)
+decision.by_id("momo").tests        # [("pay", "momo")]
 
-# record a prototype test of mobile money once;
-# every option that uses it is re-priced
-morph.update("pay", "momo", passed=False, sens=0.9, spec=0.95)
+# a prototype of mobile money failed; every option using it
+# is re-priced at the next decision
+programme.report("momo", passed={"pay": False})
+programme.save("evidence.json")     # carries over between sessions
 \end{lstlisting}
 
 \noindent Each \texttt{OptionStats} reports \texttt{novelty} ($\nu$), \texttt{combination}
 ($\kappa$), \texttt{learning} ($\Lambda$) and, among \texttt{checks}, \texttt{"mechanism"} when a
-prototype test is required. Shah's rarity metric is available by passing
-\texttt{familiar\_after=None} to \texttt{Morphology}.
+prototype test is required, and \texttt{tests}, the principles that test has to cover. A test is
+credited to an option's principles per function where results are per function, and not at all for
+a function whose classification is less than $0.5$ certain. Shah's rarity metric is available by
+passing \texttt{familiar\_after=None} to \texttt{Morphology}.
 
 \section{Evidence}
 
-Five experiments test the layer; the paper (\S6.7--6.11) gives the details. Every number below is
+Six experiments test the layer; the paper (\S6.7--6.12) gives the details. Every number below is
 checked against the result files by \texttt{scripts/verify\_figures.py}.
 
 \begin{table}[h]
@@ -186,6 +208,8 @@ robustness sweep & one assumption varied at a time, 200 worlds & learning pays u
 is near chance; robust to interactions and catalogue size \\
 Jev in the loop & Jev's real mechanism judgments, simulated outcomes, 1200 worlds & regret halved
 against v0.2 ($-0.037$); ablation below \\
+settling rules & as above, precedents of mixed reliability & evidence rule: lower regret and harm
+($6.3\%\to3.7\%$) than settling on precedent use \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -202,9 +226,18 @@ from $3.3\%$ to $5.3\%$, because precedents' principles are deployed without a c
 $[0.011,0.016]$ without it, where it also lowers harm to $2.6\%$.
 \item \textbf{Innovation pilot}: $0.0004$ $[-0.0006,0.0013]$, not measurable.
 \end{itemize}
-The layer is useful because naming principles lets evidence attach to them. Use learning per
-principle; decide on the settled rule according to how reliable precedents' principles are; keep
-the innovation pilot small or off.
+The layer is useful because naming principles lets evidence attach to them. These results set
+the defaults: learning per principle through a \texttt{Programme}, and a principle settled only when
+its recorded history proves it reliable. The innovation pilot stays small or off.
+
+\subsection*{Which precedents to treat as proven}
+With precedents of mixed reliability (half with $\theta=0.995$, half between $0.7$ and $0.9$) and a
+300-use history each, the v0.3.0 rule settled every precedent principle: more than half of its
+commitments relied on an unreliable one, and harm was $6.3\%$. The evidence rule never settled an
+unreliable principle, settled the reliable ones, and lowered regret by $0.0043$ $[0.0027,0.0059]$ and
+harm to $3.7\%$. With only 30 past uses it settled nothing, which still cut harm to $3.4\%$ at no
+significant cost in regret. Recording no history gave the lowest harm ($3.1\%$) but the highest
+regret.
 
 \subsection*{When learning stops paying}
 In the robustness sweep the regret reduction from learning was $0.0117$ with perfect classification,

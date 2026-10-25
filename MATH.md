@@ -122,7 +122,8 @@ plus NEW (Choice, cyclic orbit) and estimates r_{i,f} = P(that part fails here) 
 N_f(p) = 1 − min(1, c_{f,p}/m_f)    N_f(NEW) = 1      m_f = 1 by default; m_f = C_f is Shah's rarity
 ν_i    = Σ_f w̄_f Σ_p π_{i,f}(p) N_f(p)                mechanism novelty (replaces the judged Score)
 κ_i    = 1 − Σ_{r ∈ R*} Π_f π_{i,f}(r_f)              P(the combination is in no precedent)
-θ̄      = evidence Beta mean | 1 if a precedent used p here (settled) | Beta(s₀(1−r), s₀r) (opinion)
+θ̄      = 1 if settled | evidence Beta mean | Beta(s₀(1−r) + c_{f,p}, s₀r) (opinion + precedent uses)
+settled ⇔ μ − σ·sqrt((1−α)/α) ≥ θ_min on recorded evidence (Cantelli; α = 0.05, θ_min = 0.95)
 q_mech = 1 − Π_f Σ_p π_{i,f}(p) θ̄_{i,f,p}             one more hard check: unproven → prototype test
 Λ_i    = Σ_f Σ_p π_{i,f}(p) θ̄(1−θ̄)/(n+1)              innovation slot ranks by EI + w·Λ
 ```
@@ -135,6 +136,8 @@ q_mech = 1 − Π_f Σ_p π_{i,f}(p) θ̄_{i,f,p}             one more hard chec
 | M4 | test updates: conjugate for s = c = 1; the moment-matched Beta has the exact posterior mean and variance; an uninformative test (s + c = 1) changes nothing; P(pass) = θ̄c + (1−θ̄)(1−s); evidence on one principle changes every option that uses it | `test_m4_*` |
 | M5 | one perfect test adds at most α θ̄(1−θ̄)/(n+1) to a later decision, attained at t = θ̄, and nothing unless t ∈ (a/(n+1), (a+1)/(n+1)); ignorance vs a known coin: 101/3 | `test_m5_*` |
 | P5′ | the learning bonus w·Λ, like novelty, only moves the innovation slot | `test_learning_weight_only_moves_the_innovation_slot` |
+| M6 | a principle is settled (deployed unchecked) only if μ − σ·sqrt((1−α)/α) ≥ θ_min for its recorded evidence; by Cantelli this gives P(θ < θ_min) ≤ α for any law with that mean and variance; the bound is never above the exact Beta quantile; precedent use alone settles nothing (`settle="evidence"`, the default); `"precedent"` is the v0.3.0 rule | `test_m6_*`, `test_precedent_use_alone_*`, `test_default_rule_checks_*` |
+| L | tests are credited per function to the modal principle when its probability is ≥ 0.5, else not at all; a `Programme` keeps evidence across decisions and sessions | `test_tests_are_credited_*`, `test_programme_learns_*`, `test_morphology_round_trips_*` |
 | G | the gate on ν defaults to ½·min_f w̄_f, the midpoint between a repeated mechanism (ν = 0) and one unused principle in the lightest function; it is separate from the judged-novelty gate | `test_mechanism_gate_*`, `test_mechanism_novelty_uses_its_own_gate` |
 
 Scenarios: an untested principle goes to **verify** (prototype), not reject; a reworded precedent

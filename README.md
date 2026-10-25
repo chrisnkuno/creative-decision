@@ -68,16 +68,29 @@ problem = Problem(
 ```
 
 An option built on an unused principle gets ν > 0 and is sent to a prototype test (the
-`mechanism` hard check) rather than vetoed. Record test results with `morphology.update(f, p,
-passed=..., sens=..., spec=...)`, and every option that shares the principle is re-priced.
-`Policy(learning_weight=w)` lets the innovation slot prefer options whose test would teach most.
+`mechanism` hard check) rather than vetoed. Run related decisions through a `Programme`, so that
+every test is credited to the principles the option uses and the next decision re-prices every
+option that shares them:
+
+```python
+programme = Programme(morphology, Policy(check_sensitivity=0.9, check_specificity=0.95))
+decision = programme.decide(problem, judgments)
+decision.by_id("momo").tests  # [("pay", "momo")]: what the prototype must cover
+programme.report("momo", passed={"pay": False})  # per function where you can
+programme.save("evidence.json")  # learning carries over between sessions
+```
+
+A principle counts as proven, and is deployed without a check, only when its recorded evidence
+shows it reliable (θ ≥ 0.95 with 95% confidence, by Cantelli's inequality). Use by precedents alone
+proves nothing: record their history with `morphology.evidence[(f, p)] = Beta(successes + 1,
+failures + 1)`. `Morphology(settle="precedent")` restores the v0.3.0 rule.
 
 ## Run
 
 ```bash
 uv sync
 TYPESAFE_API_KEY=... uv run python demo.py   # falls back to MockJudge without a key
-./scripts/check.sh                           # ruff format+lint, mypy --strict, 112 tests, ≥90% branch coverage
+./scripts/check.sh                           # ruff format+lint, mypy --strict, 119 tests, ≥90% branch coverage
 uv run pytest -m live                        # against the real Jev API
 ```
 

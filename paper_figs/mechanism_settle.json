@@ -1,0 +1,154 @@
+{
+ "runs_per_problem": 300,
+ "problems": 4,
+ "by_history": {
+  "30": {
+   "precedent use (v0.3.0)": {
+    "regret": 0.040668165293316204,
+    "regret_se": 0.0010401066661813042,
+    "harm": 0.06435265828447065,
+    "checked": 0.759375,
+    "settled_unreliable": 0.5526041666666667,
+    "settled_any": 0.9878819444444444,
+    "regret_gain_vs_precedent": 0.0,
+    "regret_gain_ci": [
+     0.0,
+     0.0
+    ],
+    "harm_reduction_vs_precedent": 0.0,
+    "harm_reduction_ci": [
+     0.0,
+     0.0
+    ]
+   },
+   "evidence (default)": {
+    "regret": 0.038851028675903135,
+    "regret_se": 0.0012605259807731148,
+    "harm": 0.03428040211339754,
+    "checked": 0.7407291666666667,
+    "settled_unreliable": 0.0,
+    "settled_any": 0.0,
+    "regret_gain_vs_precedent": 0.0018171366174130673,
+    "regret_gain_ci": [
+     -8.64849119044241e-05,
+     0.0037207581467305585
+    ],
+    "harm_reduction_vs_precedent": 0.030072256171073106,
+    "harm_reduction_ci": [
+     0.02782673971989221,
+     0.032317772622254
+    ]
+   },
+   "evidence, no history": {
+    "regret": 0.046621682752812185,
+    "regret_se": 0.0014611182606072447,
+    "harm": 0.02997620460866529,
+    "checked": 0.6784375,
+    "settled_unreliable": 0.0,
+    "settled_any": 0.0,
+    "regret_gain_vs_precedent": -0.005953517459495978,
+    "regret_gain_ci": [
+     -0.008272408078622073,
+     -0.0036346268403698837
+    ],
+    "harm_reduction_vs_precedent": 0.03437645367580535,
+    "harm_reduction_ci": [
+     0.03207048159434494,
+     0.03668242575726576
+    ]
+   },
+   "never": {
+    "regret": 0.038851028675903135,
+    "regret_se": 0.0012605259807731148,
+    "harm": 0.03428040211339754,
+    "checked": 0.7407291666666667,
+    "settled_unreliable": 0.0,
+    "settled_any": 0.0,
+    "regret_gain_vs_precedent": 0.0018171366174130673,
+    "regret_gain_ci": [
+     -8.64849119044241e-05,
+     0.0037207581467305585
+    ],
+    "harm_reduction_vs_precedent": 0.030072256171073106,
+    "harm_reduction_ci": [
+     0.02782673971989221,
+     0.032317772622254
+    ]
+   }
+  },
+  "300": {
+   "precedent use (v0.3.0)": {
+    "regret": 0.04153679460171996,
+    "regret_se": 0.001090712131238633,
+    "harm": 0.06302649803409757,
+    "checked": 0.7637847222222223,
+    "settled_unreliable": 0.5405555555555556,
+    "settled_any": 0.9875347222222223,
+    "regret_gain_vs_precedent": 0.0,
+    "regret_gain_ci": [
+     0.0,
+     0.0
+    ],
+    "harm_reduction_vs_precedent": 0.0,
+    "harm_reduction_ci": [
+     0.0,
+     0.0
+    ]
+   },
+   "evidence (default)": {
+    "regret": 0.03725413541176376,
+    "regret_se": 0.0011761932399601753,
+    "harm": 0.03743288325620318,
+    "checked": 0.7626736111111111,
+    "settled_unreliable": 0.0,
+    "settled_any": 0.6089930555555556,
+    "regret_gain_vs_precedent": 0.004282659189956204,
+    "regret_gain_ci": [
+     0.0026990445432927257,
+     0.0058662738366196815
+    ],
+    "harm_reduction_vs_precedent": 0.025593614777894395,
+    "harm_reduction_ci": [
+     0.023317743553761126,
+     0.027869486002027665
+    ]
+   },
+   "evidence, no history": {
+    "regret": 0.04747698606270786,
+    "regret_se": 0.0014947170485235248,
+    "harm": 0.03088045777119414,
+    "checked": 0.6854166666666667,
+    "settled_unreliable": 0.0,
+    "settled_any": 0.0,
+    "regret_gain_vs_precedent": -0.005940191460987894,
+    "regret_gain_ci": [
+     -0.0082666269660841,
+     -0.003613755955891687
+    ],
+    "harm_reduction_vs_precedent": 0.03214604026290343,
+    "harm_reduction_ci": [
+     0.029758407248432445,
+     0.034533673277374416
+    ]
+   },
+   "never": {
+    "regret": 0.03788215537987722,
+    "regret_se": 0.001214259996294898,
+    "harm": 0.0369776896454927,
+    "checked": 0.7613888888888889,
+    "settled_unreliable": 0.0,
+    "settled_any": 0.0,
+    "regret_gain_vs_precedent": 0.003654639221842745,
+    "regret_gain_ci": [
+     0.0019817983623869355,
+     0.005327480081298555
+    ],
+    "harm_reduction_vs_precedent": 0.02604880838860487,
+    "harm_reduction_ci": [
+     0.023773424164901025,
+     0.028324192612308716
+    ]
+   }
+  }
+ }
+}

@@ -66,7 +66,7 @@ class Unsettled(Morphology):
 def morph_for(name: str, di: int) -> Morphology:
     d = DOMAINS[di]
     cls = Unsettled if "without settled" in name else Morphology
-    return cls(list(d["functions"]), [dict(r) for r in d["record"]])
+    return cls(list(d["functions"]), [dict(r) for r in d["record"]], settle="precedent")
 
 
 def truth_key(di: int, mi: int, f: str) -> str:

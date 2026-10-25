@@ -73,6 +73,7 @@ def untested() -> tuple[str, ...]:
 
 
 TAU = 0.2
+SETTLE = "precedent"  # the v0.3.0 rule these results were produced with (§6.12 compares rules)
 
 
 def functions() -> list[Function]:
@@ -301,7 +302,7 @@ def run(
         }
         bad = {k for k, th in w.theta.items() if k[1] in untested() and th < 0.3}
         for spec in specs:
-            m = Morphology(funcs, [dict(x) for x in RECORD])
+            m = Morphology(funcs, [dict(x) for x in RECORD], settle=SETTLE)
             rec = per[spec.name]
             for t, cands in enumerate(decisions):
                 ci, checked, ii = choose(spec, cands, m)
