@@ -33,6 +33,8 @@ Selection:
     reliable(i)  ⇔ status ≠ reject  ∧  CVaR_α(U_i) ≥ CVaR_α(B) − τ
     commit       = argmax_{reliable} E[U_i]
     innovation   = argmax_{reliable, novelty ≥ ν, ≠ commit} EI_i
+                   ν = min_novelty for judged novelty; for mechanism novelty, the gate
+                   ½·min_f w̄_f (midway to the smallest ν of one unused principle)
                    EI_i = (1−f)c·E[(V_i−k−B)⁺] + f(1−s)·E[(H−k−B)⁺]   (a fallback adds nothing)
     portfolio    = P(best) over {baseline} ∪ {best reliable option per niche}
     escalate     ⇔ EVPI = E[max_{reliable} U] − max_{reliable} E[U] > κ
@@ -85,7 +87,10 @@ class Policy:
     reject_above: float = 0.70  # ρ
     soft_penalty: float = 0.3  # λ
     downside_tolerance: float = 0.05  # τ
-    min_novelty: float = 0.5  # ν on the normalised 0..1 novelty scale
+    min_novelty: float = 0.5  # judged novelty on the normalised 0..1 scale
+    # gate on mechanism novelty ν; None = half the smallest function weight share, the midpoint
+    # between 0 and the smallest ν of an option with one unused principle
+    min_mechanism_novelty: float | None = None
     voi_cost: float = 0.02  # κ
     null_value: float = 0.0  # utility of doing nothing, used when no baseline is given
     check_sensitivity: float = 1.0  # s = P(check catches a violation)
@@ -254,9 +259,22 @@ def apply_mechanism(problem: Problem, judgments: list[Judgment]) -> tuple[Proble
     return replace(problem, constraints=cons), out
 
 
+def mechanism_gate(problem: Problem, policy: Policy) -> float:
+    """The innovation-slot threshold on ν (see `Policy.min_mechanism_novelty`)."""
+    if policy.min_mechanism_novelty is not None:
+        return policy.min_mechanism_novelty
+    morph = problem.morphology
+    if morph is None or not morph.functions:
+        return policy.min_novelty
+    wsum = sum(f.weight for f in morph.functions)
+    return 0.5 * min(f.weight for f in morph.functions if f.weight > 0) / wsum
+
+
 def decide(problem: Problem, judgments: list[Judgment], policy: Policy | None = None) -> Decision:
     pol = policy or Policy()
     problem, judgments = apply_mechanism(problem, judgments)
+    mech_nov = {j.option.id: j.mechanism_novelty is not None for j in judgments}
+    mech_nov[NULL_BASELINE] = False
     if len({j.option.id for j in judgments}) != len(judgments):
         raise ValueError("option ids must be unique")
     if sum(j.option.baseline for j in judgments) > 1:
@@ -334,7 +352,13 @@ def decide(problem: Problem, judgments: list[Judgment], policy: Policy | None = 
     commit = _argmax(rel, lambda i: stats[i].mean, ids, base_i)
     if commit is None:  # unreachable by P1: the baseline is always reliable
         raise RuntimeError("no reliable option; the baseline invariant is broken")
-    novel = [i for i in rel if stats[i].novelty >= pol.min_novelty and i != commit]
+    gate_nu = mechanism_gate(problem, pol)
+    novel = [
+        i
+        for i in rel
+        if i != commit
+        and stats[i].novelty >= (gate_nu if mech_nov[stats[i].id] else pol.min_novelty)
+    ]
     innovation = _argmax(
         novel, lambda i: stats[i].ei + pol.learning_weight * stats[i].learning, ids, base_i
     )

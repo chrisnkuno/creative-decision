@@ -77,7 +77,7 @@ passed=..., sens=..., spec=...)`, and every option that shares the principle is 
 ```bash
 uv sync
 TYPESAFE_API_KEY=... uv run python demo.py   # falls back to MockJudge without a key
-./scripts/check.sh                           # ruff format+lint, mypy --strict, 110 tests, ≥90% branch coverage
+./scripts/check.sh                           # ruff format+lint, mypy --strict, 112 tests, ≥90% branch coverage
 uv run pytest -m live                        # against the real Jev API
 ```
 
@@ -89,7 +89,11 @@ uv run python scripts/jev_benchmark.py analyze    # Jev benchmark, offline from 
 TYPESAFE_API_KEY=... uv run python scripts/jev_benchmark.py collect   # re-query Jev
 TYPESAFE_API_KEY=... uv run python scripts/mechanism_jev.py collect   # mechanism vs wording, live Jev
 uv run python scripts/mechanism_jev.py analyze    # offline from cached answers
-uv run python scripts/mechanism_benchmark.py      # sequential learning benchmark (~10 min)
+TYPESAFE_API_KEY=... uv run python scripts/mechanism_disguise.py collect   # jargon / mundane wording
+export PYTHONPATH=scripts
+uv run python scripts/mechanism_benchmark.py      # sequential learning benchmark (~20 min)
+uv run python scripts/mechanism_robustness.py     # where learning stops paying (~15 min)
+uv run python scripts/mechanism_jevloop.py        # sequential decisions on Jev's real judgments
 uv run python scripts/figures.py                  # every figure
 uv run python scripts/verify_figures.py           # checks every number the paper quotes
 ```

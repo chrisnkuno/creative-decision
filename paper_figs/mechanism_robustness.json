@@ -1,0 +1,329 @@
+{
+ "runs": 200,
+ "default": {
+  "p_correct": 0.95,
+  "interact": 0.0,
+  "untested": 3
+ },
+ "results": [
+  {
+   "knob": "default",
+   "value": "-",
+   "learning_gain": 0.0075569582028707505,
+   "learning_gain_ci": [
+    0.006033550960603467,
+    0.009080365445138034
+   ],
+   "pilot_vs_commit": 0.0008817389329645855,
+   "pilot_vs_commit_ci": [
+    -0.00022376047362630586,
+    0.001987238339555477
+   ],
+   "regret": {
+    "commit only, learning": 0.025341171598834214,
+    "mechanism novelty, no learning": 0.03201639086874038,
+    "mechanism novelty + learning": 0.02445943266586963
+   },
+   "bad_last8": {
+    "commit only, learning": 0.10875,
+    "mechanism novelty, no learning": 0.24125,
+    "mechanism novelty + learning": 0.063125
+   },
+   "harm": {
+    "commit only, learning": 0.05582806681132125,
+    "mechanism novelty, no learning": 0.06219375596631087,
+    "mechanism novelty + learning": 0.054258994847502295
+   }
+  },
+  {
+   "knob": "p_correct",
+   "value": 0.5,
+   "learning_gain": 0.0009712602845682955,
+   "learning_gain_ci": [
+    -0.0005972563877758408,
+    0.0025397769569124318
+   ],
+   "pilot_vs_commit": 0.0016536773211720467,
+   "pilot_vs_commit_ci": [
+    0.000423786346709594,
+    0.0028835682956344995
+   ],
+   "regret": {
+    "commit only, learning": 0.07567168611541691,
+    "mechanism novelty, no learning": 0.07498926907881316,
+    "mechanism novelty + learning": 0.07401800879424486
+   },
+   "bad_last8": {
+    "commit only, learning": 0.25875,
+    "mechanism novelty, no learning": 0.313125,
+    "mechanism novelty + learning": 0.256875
+   },
+   "harm": {
+    "commit only, learning": 0.1426968664404768,
+    "mechanism novelty, no learning": 0.14028512762039896,
+    "mechanism novelty + learning": 0.13850881669569948
+   }
+  },
+  {
+   "knob": "p_correct",
+   "value": 0.7,
+   "learning_gain": 0.0033187955402271506,
+   "learning_gain_ci": [
+    0.001644777510598357,
+    0.004992813569855944
+   ],
+   "pilot_vs_commit": 0.0018316123459053374,
+   "pilot_vs_commit_ci": [
+    0.00039871201147898255,
+    0.0032645126803316923
+   ],
+   "regret": {
+    "commit only, learning": 0.0558640798039717,
+    "mechanism novelty, no learning": 0.05735126299829352,
+    "mechanism novelty + learning": 0.05403246745806636
+   },
+   "bad_last8": {
+    "commit only, learning": 0.205625,
+    "mechanism novelty, no learning": 0.284375,
+    "mechanism novelty + learning": 0.18
+   },
+   "harm": {
+    "commit only, learning": 0.10714817360280401,
+    "mechanism novelty, no learning": 0.10604324092735098,
+    "mechanism novelty + learning": 0.1033503313194453
+   }
+  },
+  {
+   "knob": "p_correct",
+   "value": 0.85,
+   "learning_gain": 0.006452979255302972,
+   "learning_gain_ci": [
+    0.004951002146499743,
+    0.0079549563641062
+   ],
+   "pilot_vs_commit": 0.0013526996098390629,
+   "pilot_vs_commit_ci": [
+    0.00018350518455355585,
+    0.00252189403512457
+   ],
+   "regret": {
+    "commit only, learning": 0.03922259822103743,
+    "mechanism novelty, no learning": 0.04432287786650134,
+    "mechanism novelty + learning": 0.03786989861119836
+   },
+   "bad_last8": {
+    "commit only, learning": 0.179375,
+    "mechanism novelty, no learning": 0.30375,
+    "mechanism novelty + learning": 0.14
+   },
+   "harm": {
+    "commit only, learning": 0.08118842781446838,
+    "mechanism novelty, no learning": 0.08478667367777162,
+    "mechanism novelty + learning": 0.07730494435782258
+   }
+  },
+  {
+   "knob": "p_correct",
+   "value": 1.0,
+   "learning_gain": 0.011681689398566812,
+   "learning_gain_ci": [
+    0.010092338099232111,
+    0.013271040697901512
+   ],
+   "pilot_vs_commit": 0.002006621118101578,
+   "pilot_vs_commit_ci": [
+    0.000811834088734945,
+    0.0032014081474682115
+   ],
+   "regret": {
+    "commit only, learning": 0.018836387787386884,
+    "mechanism novelty, no learning": 0.02851145606785212,
+    "mechanism novelty + learning": 0.016829766669285307
+   },
+   "bad_last8": {
+    "commit only, learning": 0.108125,
+    "mechanism novelty, no learning": 0.2775,
+    "mechanism novelty + learning": 0.050625
+   },
+   "harm": {
+    "commit only, learning": 0.047312805652082866,
+    "mechanism novelty, no learning": 0.05648264277357671,
+    "mechanism novelty + learning": 0.0438040916043438
+   }
+  },
+  {
+   "knob": "interact",
+   "value": 0.15,
+   "learning_gain": 0.0066941543845822045,
+   "learning_gain_ci": [
+    0.005269266035145397,
+    0.008119042734019012
+   ],
+   "pilot_vs_commit": 0.0007307181741928291,
+   "pilot_vs_commit_ci": [
+    -0.0002843138175560356,
+    0.0017457501659416939
+   ],
+   "regret": {
+    "commit only, learning": 0.024919388665237702,
+    "mechanism novelty, no learning": 0.03088282487562708,
+    "mechanism novelty + learning": 0.024188670491044874
+   },
+   "bad_last8": {
+    "commit only, learning": 0.1125,
+    "mechanism novelty, no learning": 0.24125,
+    "mechanism novelty + learning": 0.061875
+   },
+   "harm": {
+    "commit only, learning": 0.05646167269839931,
+    "mechanism novelty, no learning": 0.06298838448814836,
+    "mechanism novelty + learning": 0.054152529811196386
+   }
+  },
+  {
+   "knob": "interact",
+   "value": 0.3,
+   "learning_gain": 0.0059875017082751895,
+   "learning_gain_ci": [
+    0.004643205286619,
+    0.007331798129931379
+   ],
+   "pilot_vs_commit": 0.00037712660921352515,
+   "pilot_vs_commit_ci": [
+    -0.0006343128421182217,
+    0.0013885660605452719
+   ],
+   "regret": {
+    "commit only, learning": 0.02479308698533198,
+    "mechanism novelty, no learning": 0.03040346208439364,
+    "mechanism novelty + learning": 0.024415960376118453
+   },
+   "bad_last8": {
+    "commit only, learning": 0.10625,
+    "mechanism novelty, no learning": 0.24125,
+    "mechanism novelty + learning": 0.0625
+   },
+   "harm": {
+    "commit only, learning": 0.05644946191580009,
+    "mechanism novelty, no learning": 0.06378301300998586,
+    "mechanism novelty + learning": 0.05428412794417075
+   }
+  },
+  {
+   "knob": "interact",
+   "value": 0.5,
+   "learning_gain": 0.006399318838571399,
+   "learning_gain_ci": [
+    0.00512591587766236,
+    0.007672721799480438
+   ],
+   "pilot_vs_commit": 0.0003612782547205287,
+   "pilot_vs_commit_ci": [
+    -0.0006090014584051921,
+    0.0013315579678462497
+   ],
+   "regret": {
+    "commit only, learning": 0.024923171856849734,
+    "mechanism novelty, no learning": 0.030961212440700606,
+    "mechanism novelty + learning": 0.024561893602129202
+   },
+   "bad_last8": {
+    "commit only, learning": 0.101875,
+    "mechanism novelty, no learning": 0.24125,
+    "mechanism novelty + learning": 0.06125
+   },
+   "harm": {
+    "commit only, learning": 0.05666163064770063,
+    "mechanism novelty, no learning": 0.06484251770576921,
+    "mechanism novelty + learning": 0.054053989773471436
+   }
+  },
+  {
+   "knob": "untested",
+   "value": 1,
+   "learning_gain": 0.005294875661307119,
+   "learning_gain_ci": [
+    0.0034218705622011377,
+    0.007167880760413101
+   ],
+   "pilot_vs_commit": 0.000236941640802508,
+   "pilot_vs_commit_ci": [
+    -0.0010928606210984973,
+    0.001566743902703513
+   ],
+   "regret": {
+    "commit only, learning": 0.02613516991176507,
+    "mechanism novelty, no learning": 0.031193103932269678,
+    "mechanism novelty + learning": 0.025898228270962557
+   },
+   "bad_last8": {
+    "commit only, learning": 0.09375,
+    "mechanism novelty, no learning": 0.24875,
+    "mechanism novelty + learning": 0.070625
+   },
+   "harm": {
+    "commit only, learning": 0.06532840013719877,
+    "mechanism novelty, no learning": 0.06998184449628773,
+    "mechanism novelty + learning": 0.06578365415999016
+   }
+  },
+  {
+   "knob": "untested",
+   "value": 6,
+   "learning_gain": 0.0070878068344374405,
+   "learning_gain_ci": [
+    0.005776048394010055,
+    0.008399565274864825
+   ],
+   "pilot_vs_commit": 0.0005718628705578934,
+   "pilot_vs_commit_ci": [
+    -0.0003132518401374564,
+    0.0014569775812532432
+   ],
+   "regret": {
+    "commit only, learning": 0.02755402746022357,
+    "mechanism novelty, no learning": 0.03406997142410311,
+    "mechanism novelty + learning": 0.026982164589665673
+   },
+   "bad_last8": {
+    "commit only, learning": 0.15,
+    "mechanism novelty, no learning": 0.2425,
+    "mechanism novelty + learning": 0.105
+   },
+   "harm": {
+    "commit only, learning": 0.05635535902422868,
+    "mechanism novelty, no learning": 0.06170668477873954,
+    "mechanism novelty + learning": 0.053273351225257976
+   }
+  },
+  {
+   "knob": "untested",
+   "value": 12,
+   "learning_gain": 0.005814621132339228,
+   "learning_gain_ci": [
+    0.0046282253620115585,
+    0.0070010169026668975
+   ],
+   "pilot_vs_commit": 0.0007233727254775594,
+   "pilot_vs_commit_ci": [
+    -8.099930568936965e-05,
+    0.0015277447566444885
+   ],
+   "regret": {
+    "commit only, learning": 0.029065605249756085,
+    "mechanism novelty, no learning": 0.034156853656617754,
+    "mechanism novelty + learning": 0.028342232524278525
+   },
+   "bad_last8": {
+    "commit only, learning": 0.1825,
+    "mechanism novelty, no learning": 0.253125,
+    "mechanism novelty + learning": 0.135625
+   },
+   "harm": {
+    "commit only, learning": 0.054602160640463,
+    "mechanism novelty, no learning": 0.05807817467531385,
+    "mechanism novelty + learning": 0.052253788852041065
+   }
+  }
+ ]
+}

@@ -135,6 +135,7 @@ q_mech = 1 − Π_f Σ_p π_{i,f}(p) θ̄_{i,f,p}             one more hard chec
 | M4 | test updates: conjugate for s = c = 1; the moment-matched Beta has the exact posterior mean and variance; an uninformative test (s + c = 1) changes nothing; P(pass) = θ̄c + (1−θ̄)(1−s); evidence on one principle changes every option that uses it | `test_m4_*` |
 | M5 | one perfect test adds at most α θ̄(1−θ̄)/(n+1) to a later decision, attained at t = θ̄, and nothing unless t ∈ (a/(n+1), (a+1)/(n+1)); ignorance vs a known coin: 101/3 | `test_m5_*` |
 | P5′ | the learning bonus w·Λ, like novelty, only moves the innovation slot | `test_learning_weight_only_moves_the_innovation_slot` |
+| G | the gate on ν defaults to ½·min_f w̄_f, the midpoint between a repeated mechanism (ν = 0) and one unused principle in the lightest function; it is separate from the judged-novelty gate | `test_mechanism_gate_*`, `test_mechanism_novelty_uses_its_own_gate` |
 
 Scenarios: an untested principle goes to **verify** (prototype), not reject; a reworded precedent
 has ν = 0, is clear, and cannot take the innovation slot; `apply_mechanism` is idempotent and

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import replace
+from typing import Any
 
 import numpy as np
 import pytest
@@ -19,10 +20,11 @@ from cdm import (
     Morphology,
     Option,
     Policy,
+    Problem,
     decide,
     judge_problem,
 )
-from cdm.decide import MECHANISM, apply_mechanism
+from cdm.decide import MECHANISM, apply_mechanism, mechanism_gate
 from cdm.judges import build_questions
 from cdm.mechanism import next_decision_value, next_decision_value_bound, shared_principles
 from cdm.simplex import Vec
@@ -45,8 +47,8 @@ beta = st.builds(Beta, st.floats(0.05, 50), st.floats(0.05, 50))
 prob = st.floats(0, 1)
 
 
-def morph(**kw: object) -> Morphology:
-    return Morphology(list(FUNCS), [dict(r) for r in RECORD], **kw)  # type: ignore[arg-type]
+def morph(**kw: Any) -> Morphology:
+    return Morphology(list(FUNCS), [dict(r) for r in RECORD], **kw)
 
 
 @st.composite
@@ -207,10 +209,11 @@ def test_m5_ignorance_teaches_more_than_a_known_coin() -> None:
 
 
 # Policy hand-off ---------------------------------------------------------------------------
-def scenario_with_mechanisms() -> tuple[object, list[Judgment]]:
+def scenario_with_mechanisms() -> tuple[Problem, list[Judgment]]:
     pr = replace(problem(hard=("harm",), soft=()), morphology=morph())
     m = pr.morphology
-    assert m is not None
+    if m is None:
+        raise AssertionError
 
     def j(oid: str, level: int, choice: dict[str, str], *, base: bool = False) -> Judgment:
         out = judgment(oid, pr, point(level), novelty=0.0 if base else 0.9, baseline=base)
@@ -226,7 +229,7 @@ def scenario_with_mechanisms() -> tuple[object, list[Judgment]]:
 
 def test_unknown_mechanism_is_verified_not_vetoed() -> None:
     pr, js = scenario_with_mechanisms()
-    d = decide(pr, js)  # type: ignore[arg-type]
+    d = decide(pr, js)
     momo = d.by_id("momo")
     assert momo.status == "verify"
     assert MECHANISM.id in momo.checks
@@ -237,14 +240,14 @@ def test_unknown_mechanism_is_verified_not_vetoed() -> None:
 
 def test_rewording_does_not_take_the_innovation_slot() -> None:
     pr, js = scenario_with_mechanisms()
-    d = decide(pr, js, Policy(min_novelty=0.4, downside_tolerance=1.0))  # type: ignore[arg-type]
+    d = decide(pr, js, Policy(min_novelty=0.4, downside_tolerance=1.0))
     assert d.innovation in {None, "momo"}
     assert d.by_id("reword").novelty < 0.4
 
 
 def test_apply_mechanism_is_idempotent_and_settles_the_baseline() -> None:
     pr, js = scenario_with_mechanisms()
-    p1, j1 = apply_mechanism(pr, js)  # type: ignore[arg-type]
+    p1, j1 = apply_mechanism(pr, js)
     p2, j2 = apply_mechanism(p1, j1)
     assert [c.id for c in p1.constraints] == [c.id for c in p2.constraints]
     assert [x.violations for x in j1] == [x.violations for x in j2]
@@ -254,15 +257,15 @@ def test_apply_mechanism_is_idempotent_and_settles_the_baseline() -> None:
 def test_missing_classification_is_an_error() -> None:
     pr, js = scenario_with_mechanisms()
     with pytest.raises(ValueError, match="classification"):
-        decide(pr, [js[0], replace(js[2], mechanism={})])  # type: ignore[arg-type]
+        decide(pr, [js[0], replace(js[2], mechanism={})])
 
 
 @settings(max_examples=40, deadline=None)
 @given(st.floats(0, 5))
 def test_learning_weight_only_moves_the_innovation_slot(w: float) -> None:
     pr, js = scenario_with_mechanisms()
-    a = decide(pr, js)  # type: ignore[arg-type]
-    b = decide(pr, js, Policy(learning_weight=w))  # type: ignore[arg-type]
+    a = decide(pr, js)
+    b = decide(pr, js, Policy(learning_weight=w))
     assert a.commit == b.commit
     assert a.portfolio == b.portfolio
     assert a.evpi == b.evpi
@@ -332,3 +335,26 @@ def test_mock_pipeline_with_mechanisms_runs_end_to_end() -> None:
     d = decide(pr, js)
     assert d.by_id("x").status in {"clear", "verify", "reject"}
     assert 0 <= d.by_id("x").combination <= 1
+
+
+def test_mechanism_gate_is_half_the_lightest_function_share() -> None:
+    pr, _js = scenario_with_mechanisms()
+    m = pr.morphology
+    if m is None:
+        raise AssertionError
+    assert mechanism_gate(pr, Policy()) == pytest.approx(0.5 * 1 / 3)
+    assert mechanism_gate(pr, Policy(min_mechanism_novelty=0.4)) == 0.4
+    assert mechanism_gate(replace(pr, morphology=None), Policy()) == 0.5
+    # one unused principle in the lightest function clears the default gate, a precedent does not
+    light = m.novelty(m.classification({"reach": "door", "pay": "momo"}))
+    assert light == pytest.approx(1 / 3)
+    assert light > mechanism_gate(pr, Policy()) > 0.0
+
+
+def test_mechanism_novelty_uses_its_own_gate() -> None:
+    pr, js = scenario_with_mechanisms()
+    loose = Policy(downside_tolerance=1.0, min_novelty=0.99)
+    d = decide(pr, js, loose)
+    assert d.innovation == "momo"  # ν = 1/3 passes the mechanism gate although min_novelty = 0.99
+    strict = Policy(downside_tolerance=1.0, min_mechanism_novelty=0.9)
+    assert decide(pr, js, strict).innovation is None

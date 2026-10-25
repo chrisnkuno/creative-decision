@@ -665,6 +665,62 @@ def fig_mech_bench(mb: dict) -> None:
     _save(fig, "fig_mech_bench")
 
 
+def fig_mech_disguise(md: dict) -> None:
+    fig, ax = plt.subplots(figsize=(FULL * 0.62, 2.3), layout="constrained")
+    rows = (
+        ("hype_all", "hype, all 28 mechanisms"),
+        ("jargon_repeated", "jargon, 8 repeated"),
+        ("jargon_novel", "jargon, 20 new"),
+        ("mundane_novel", "mundane, 20 new"),
+    )
+    for k, (key, _lab) in enumerate(rows):
+        for dy, measure, col, mk in ((-0.12, "judged", ORANGE, "o"), (0.12, "nu", BLUE, "s")):
+            e = md[f"{measure}_{key}"]
+            ax.plot(e["ci"], [k + dy] * 2, color=col, lw=1.2)
+            ax.plot([e["mean"]], [k + dy], mk, color=col, mec="white", ms=6)
+    ax.axvline(0, color=MUTED, lw=0.8)
+    ax.set_yticks(range(len(rows)), [r[1] for r in rows])
+    ax.invert_yaxis()
+    ax.grid(axis="y", visible=False)
+    ax.set_xlabel("change from the plain wording (paired, 95% CI)")
+    ax.plot([], [], "o", color=ORANGE, label="judged novelty")
+    ax.plot([], [], "s", color=BLUE, label=r"mechanism novelty $\nu$")
+    ax.legend(loc="lower right", fontsize=7)
+    _save(fig, "fig_mech_disguise")
+
+
+def fig_mech_robust(mr: dict) -> None:
+    fig, axes = plt.subplots(1, 3, figsize=(FULL, 2.3), layout="constrained", sharey=True)
+    default = next(r for r in mr["results"] if r["knob"] == "default")
+    panels = (
+        ("p_correct", "P(classification correct)"),
+        ("interact", "P(interaction failure)"),
+        ("untested", "untested principles per function"),
+    )
+    for ax, (knob, lab) in zip(axes, panels, strict=True):
+        pts = [r for r in mr["results"] if r["knob"] == knob]
+        pts.append({**default, "value": mr["default"][knob]})
+        pts.sort(key=lambda r: float(r["value"]))
+        x = np.array([float(r["value"]) for r in pts])
+        for key, col, mk, name in (
+            ("learning_gain", BLUE, "o", "learning vs. no learning"),
+            ("pilot_vs_commit", YELLOW, "s", "innovation pilot vs. commit only"),
+        ):
+            y = np.array([r[key] for r in pts])
+            ci = np.array([r[f"{key}_ci"] for r in pts])
+            ax.fill_between(x, ci[:, 0], ci[:, 1], color=col, alpha=0.15, lw=0)
+            ax.plot(x, y, marker=mk, color=col, label=name, ms=4)
+        ax.axhline(0, color=MUTED, lw=0.8)
+        ax.set_xlabel(lab)
+        if knob == "untested":
+            ax.set_xscale("log", base=2)
+            ax.set_xticks([1, 3, 6, 12], ["1", "3", "6", "12"])
+    axes[0].set_ylabel("regret reduction (paired)")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="outside lower center", ncol=2, fontsize=7)
+    _save(fig, "fig_mech_robust")
+
+
 if __name__ == "__main__":
     exp = json.loads((OUT / "experiments.json").read_text())
     fig_pipeline()
@@ -681,4 +737,6 @@ if __name__ == "__main__":
     fig_jev(json.loads((OUT / "jev_benchmark.json").read_text()))
     fig_mech_voi()
     fig_mech_jev(json.loads((OUT / "mechanism_jev.json").read_text()))
+    fig_mech_disguise(json.loads((OUT / "mechanism_disguise.json").read_text()))
     fig_mech_bench(json.loads((OUT / "mechanism_benchmark.json").read_text()))
+    fig_mech_robust(json.loads((OUT / "mechanism_robustness.json").read_text()))

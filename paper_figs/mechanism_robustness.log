@@ -1,0 +1,33 @@
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 100/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+  B=0.5 ε=0.05 T=24: 200/200 runs
+default   -     learning +0.0076 [+0.0060,+0.0091]  pilot vs commit +0.0009 [-0.0002,+0.0020]  bad 0.06 vs 0.24
+p_correct 0.5   learning +0.0010 [-0.0006,+0.0025]  pilot vs commit +0.0017 [+0.0004,+0.0029]  bad 0.26 vs 0.31
+p_correct 0.7   learning +0.0033 [+0.0016,+0.0050]  pilot vs commit +0.0018 [+0.0004,+0.0033]  bad 0.18 vs 0.28
+p_correct 0.85  learning +0.0065 [+0.0050,+0.0080]  pilot vs commit +0.0014 [+0.0002,+0.0025]  bad 0.14 vs 0.30
+p_correct 1.0   learning +0.0117 [+0.0101,+0.0133]  pilot vs commit +0.0020 [+0.0008,+0.0032]  bad 0.05 vs 0.28
+interact  0.15  learning +0.0067 [+0.0053,+0.0081]  pilot vs commit +0.0007 [-0.0003,+0.0017]  bad 0.06 vs 0.24
+interact  0.3   learning +0.0060 [+0.0046,+0.0073]  pilot vs commit +0.0004 [-0.0006,+0.0014]  bad 0.06 vs 0.24
+interact  0.5   learning +0.0064 [+0.0051,+0.0077]  pilot vs commit +0.0004 [-0.0006,+0.0013]  bad 0.06 vs 0.24
+untested  1     learning +0.0053 [+0.0034,+0.0072]  pilot vs commit +0.0002 [-0.0011,+0.0016]  bad 0.07 vs 0.25
+untested  6     learning +0.0071 [+0.0058,+0.0084]  pilot vs commit +0.0006 [-0.0003,+0.0015]  bad 0.10 vs 0.24
+untested  12    learning +0.0058 [+0.0046,+0.0070]  pilot vs commit +0.0007 [-0.0001,+0.0015]  bad 0.14 vs 0.25

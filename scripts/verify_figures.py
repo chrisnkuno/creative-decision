@@ -404,4 +404,182 @@ check(
     and near(long_run[learning]["good_last8"], 0.11, 2),
 )
 
+md = json.loads(Path("paper_figs/mechanism_disguise.json").read_text())
+check("disguise: 104 options", ok=md["n_options"] == 104)
+for key, n, vals in (
+    (
+        "hype_all",
+        28,
+        {
+            "judged": (0.055, 0.034, 0.078),
+            "nu": (0.003, -0.005, 0.013),
+            "q_mech": (0.036, 0.021, 0.051),
+        },
+    ),
+    (
+        "jargon_repeated",
+        8,
+        {
+            "judged": (0.096, 0.053, 0.136),
+            "nu": (0.043, 0.011, 0.083),
+            "q_mech": (0.028, 0.004, 0.058),
+        },
+    ),
+    (
+        "jargon_novel",
+        20,
+        {
+            "judged": (0.049, 0.036, 0.062),
+            "nu": (0.031, -0.002, 0.064),
+            "q_mech": (0.047, 0.010, 0.085),
+        },
+    ),
+    (
+        "mundane_novel",
+        20,
+        {
+            "judged": (0.007, -0.005, 0.018),
+            "nu": (0.016, 0.001, 0.039),
+            "q_mech": (0.044, 0.011, 0.084),
+        },
+    ),
+):
+    for measure, (mean, lo, hi) in vals.items():
+        e = md[f"{measure}_{key}"]
+        check(
+            f"disguise table: {key} {measure} {mean} [{lo}, {hi}]",
+            ok=e["n"] == n
+            and near(e["mean"], mean, 3)
+            and near(e["ci"][0], lo, 3)
+            and near(e["ci"][1], hi, 3),
+        )
+lv = md["levels"]
+check(
+    "disguise: repeated judged 0.08 -> 0.18, nu 0.05 -> 0.10 under jargon",
+    ok=near(lv["repeated/plain"]["judged"], 0.08, 2)
+    and near(lv["repeated/jargon"]["judged"], 0.18, 2)
+    and near(lv["repeated/plain"]["nu"], 0.05, 2)
+    and near(lv["repeated/jargon"]["nu"], 0.10, 2),
+)
+acc = md["accuracy"]
+check(
+    "disguise: accuracy 95% jargon, 98-100% otherwise",
+    ok=near(acc["jargon"], 0.95, 2)
+    and all(0.98 <= acc[w] <= 1.0 for w in ("plain", "hype", "mundane")),
+)
+for measure in ("judged", "nu"):
+    g = md[f"gate_{measure}"]
+    check(
+        f"disguise: {measure} at 0.25 admits no repeated and all new under every wording; AUROC 1",
+        ok=g["precision@0.25"] == 1.0 and g["recall@0.25"] == 1.0 and g["auroc"] == 1.0,
+    )
+check(
+    "disguise: MAE 0.128 / 0.054; recall at 0.5: 86% judged, 56% nu",
+    ok=near(md["gate_judged"]["mae"], 0.128, 3)
+    and near(md["gate_nu"]["mae"], 0.054, 3)
+    and near(md["gate_judged"]["recall@0.5"], 0.86, 2)
+    and near(md["gate_nu"]["recall@0.5"], 0.56, 2),
+)
+
+mr = json.loads(Path("paper_figs/mechanism_robustness.json").read_text())
+
+
+def rob(knob: str, value: object) -> dict:
+    return next(r for r in mr["results"] if r["knob"] == knob and r["value"] == value)
+
+
+check("robustness: 200 runs", ok=mr["runs"] == 200)
+for (knob, value), (mean, lo, hi) in {
+    ("p_correct", 1.0): (0.0117, 0.0101, 0.0133),
+    ("default", "-"): (0.0076, 0.0060, 0.0091),
+    ("p_correct", 0.7): (0.0033, 0.0016, 0.0050),
+    ("p_correct", 0.5): (0.0010, -0.0006, 0.0025),
+    ("interact", 0.5): (0.0064, 0.0051, 0.0077),
+}.items():
+    r = rob(knob, value)
+    check(
+        f"robustness: learning gain at {knob}={value} is {mean} [{lo}, {hi}]",
+        ok=near(r["learning_gain"], mean, 4)
+        and near(r["learning_gain_ci"][0], lo, 4)
+        and near(r["learning_gain_ci"][1], hi, 4),
+    )
+check(
+    "robustness: learning gain 0.0053 with 1 untested principle, 0.0058 with 12",
+    ok=near(rob("untested", 1)["learning_gain"], 0.0053, 4)
+    and near(rob("untested", 12)["learning_gain"], 0.0058, 4),
+)
+r7 = rob("p_correct", 0.7)
+check(
+    "robustness: pilot vs commit 0.0018 [0.0004, 0.0033] at accuracy 0.7",
+    ok=near(r7["pilot_vs_commit"], 0.0018, 4)
+    and near(r7["pilot_vs_commit_ci"][0], 0.0004, 4)
+    and near(r7["pilot_vs_commit_ci"][1], 0.0033, 4),
+)
+check(
+    "robustness: pilot gain within [0, 0.002] everywhere",
+    ok=all(0 <= r["pilot_vs_commit"] <= 0.0021 for r in mr["results"]),
+)
+sig = {(r["knob"], r["value"]) for r in mr["results"] if r["pilot_vs_commit_ci"][0] > 0}
+check(
+    "robustness: pilot interval excludes 0 exactly at accuracy 0.5, 0.7, 0.85, 1",
+    ok=sig == {("p_correct", 0.5), ("p_correct", 0.7), ("p_correct", 0.85), ("p_correct", 1.0)},
+    detail=str(sorted(sig, key=str)),
+)
+
+jl = json.loads(Path("paper_figs/mechanism_jevloop.json").read_text())
+check("Jev loop: 4 problems x 300 worlds", ok=jl["problems"] == 4 and jl["runs_per_problem"] == 300)
+for name, (reg, se, harm, bad, gain, lo, hi) in {
+    "v0.2": (0.0742, 0.0019, 0.033, 0.18, 0.0, 0.0, 0.0),
+    "veto untested": (0.1175, 0.0022, 0.038, 0.02, -0.0433, -0.0472, -0.0393),
+    "v0.3 without settled rule, no learning": (
+        0.0745,
+        0.0019,
+        0.033,
+        0.18,
+        -0.0003,
+        -0.0003,
+        -0.0002,
+    ),
+    "v0.3 without settled rule, learning": (0.0607, 0.0018, 0.026, 0.10, 0.0135, 0.0112, 0.0158),
+    "v0.3, no learning": (0.0489, 0.0013, 0.053, 0.24, 0.0253, 0.0228, 0.0279),
+    "v0.3, learning": (0.0370, 0.0011, 0.050, 0.13, 0.0372, 0.0340, 0.0405),
+    "v0.3, commit only": (0.0374, 0.0012, 0.050, 0.15, 0.0369, 0.0336, 0.0401),
+}.items():
+    d = jl["policies"][name]
+    check(
+        f"Jev loop table: {name}",
+        ok=near(d["regret"], reg, 4)
+        and near(d["regret_se"], se, 4)
+        and near(d["harm"], harm, 3)
+        and near(d["bad_last8"], bad, 2)
+        and near(d["gain_vs_v02"], gain, 4)
+        and near(d["gain_vs_v02_ci"][0], lo, 4)
+        and near(d["gain_vs_v02_ci"][1], hi, 4),
+    )
+for key, (mean, lo, hi) in {
+    "settled_rule": (0.026, 0.023, 0.028),
+    "learning_vs_no_learning": (0.012, 0.010, 0.014),
+    "learning_without_settled": (0.014, 0.011, 0.016),
+    "pilot_vs_commit_only": (0.0004, -0.0006, 0.0013),
+}.items():
+    e = jl[key]
+    dp = 4 if key == "pilot_vs_commit_only" else 3
+    check(
+        f"Jev loop: {key} {mean} [{lo}, {hi}]",
+        ok=near(e["mean"], mean, dp) and near(e["ci"][0], lo, dp) and near(e["ci"][1], hi, dp),
+    )
+pol = jl["policies"]
+check(
+    "Jev loop: full layer halves v0.2 regret and wins in every problem",
+    ok=near(pol["v0.3, learning"]["regret"] / pol["v0.2"]["regret"], 0.5, 1)
+    and all(
+        a < b
+        for a, b in zip(pol["v0.3, learning"]["by_problem"], pol["v0.2"]["by_problem"], strict=True)
+    ),
+)
+check(
+    "Jev loop: veto untested is the worst policy",
+    ok=pol["veto untested"]["regret"] == max(r["regret"] for r in pol.values()),
+)
+
 sys.exit(1 if failures else 0)

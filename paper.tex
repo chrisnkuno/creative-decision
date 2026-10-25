@@ -57,7 +57,7 @@ times more than a known coin flip. Every property is derived with
 its hypotheses; doing so corrected two over-claimed properties and a tie-handling bug that the
 tests had missed.
 
-The evidence is kept apart by kind. (i) \emph{Implementation}: 110 property-based tests and oracles
+The evidence is kept apart by kind. (i) \emph{Implementation}: 112 property-based tests and oracles
 at $99\%$ branch coverage, and agreement with Monte Carlo. (ii) \emph{A synthetic benchmark} with
 $\tau$ chosen on held-out problems: checking uncertain options beats vetoing them (regret $0.045$
 vs.\ $0.091$, paired gain $[0.041,0.050]$) at about $1\%$ undetected harm, against $17$--$23\%$ for
@@ -69,13 +69,15 @@ calibrated on average on ambiguous options but varies with phrasing, and is more
 value than its audit prior assumes. Over 48 problems \texttt{cdm} has the lowest regret and harm
 (gain over veto $0.051$, bootstrap interval $[0.009,0.102]$), with a gain that depends on an assumed
 status-quo value. None of this establishes better decisions on real outcomes, which we specify as
-the main open problem. (iv) \emph{Creative engineering, live and simulated.} On 56 options built from
-known and new working principles, each written plainly and with hype, Jev names the principle in
-$99\%$ of cases; hype raises its ordinal novelty by $0.058$ $[0.038,0.080]$ but the mechanism novelty
-by $0.005$ $[-0.006,0.017]$. In a simulated programme of related decisions, learning per principle
-lowers regret in every setting tested and cuts late commitments to unreliable principles from
-$26\%$ to $7\%$; the innovation slot finds more good principles but pays for itself in regret only when
-its pilots are small and the status quo is ordinary.
+the main open problem. (iv) \emph{Creative engineering, live and simulated.} On options built from
+known and new working principles and written plainly, with hype, in jargon and in mundane words, Jev
+names the principle in $95$--$100\%$ of cases; rewording moves its ordinal novelty about twice as much
+as the mechanism novelty, though no wording carried an old mechanism past the novelty gate. Run on
+Jev's real judgments over sequences of related decisions, the layer halves regret against v0.2. An
+ablation shows where the gain comes from: using precedents as evidence ($0.026$, at a cost in harm)
+and learning per principle ($0.012$--$0.014$, which also lowers harm when used alone), not the novelty
+measure itself, which changes nothing. Learning pays while the judge classifies principles better
+than chance, and the innovation pilot adds little.
 \end{abstract}
 
 \noindent\textbf{Keywords:} calibrated decision models, decision theory, Aitchison geometry,
@@ -604,6 +606,15 @@ never lowers $N_g(p')$ for any other pair (it raises them under Shah's metric, w
 grows). In the policy, $\nu_i$ replaces the judged novelty in the eligibility test of the
 innovation slot; P5 still holds, since novelty enters nothing else.
 
+\paragraph{The eligibility gate on $\nu$.} An option with one unused principle in function $f$ has
+true novelty $\bar w_f=w_f/\sum_g w_g$, and a repeated mechanism has $0$. The default gate is therefore
+the midpoint $\nu_{\min}=\tfrac12\min_f\bar w_f$ ($0.25$ for two equally weighted functions), set by
+\texttt{Policy.min\_mechanism\_novelty} and otherwise derived from the morphology. The first version of
+the layer applied the judged-novelty gate $0.5$ to $\nu$ as well; with two functions that gate sits exactly on
+the true novelty of every option with one new principle, and in the disguise experiment
+(\S\ref{sec:disguise}) it admitted only $56\%$ of new mechanisms. The midpoint rule was adopted after
+that observation; it is derived from the structure of $\nu$, not fitted to the data.
+
 \subsection{Feasibility of a mechanism and the prototype gate}
 
 Let $\theta_{f,p}$ be the rate at which principle $p$ performs $f$ across settings, and
@@ -672,9 +683,8 @@ $\bar\theta(1-\bar\theta)/(n+1)$; ignorance ($n=2$) is worth $34$ times a known 
 
 \subsection{What each piece of evidence supports}
 
-We report eight kinds of evidence. Table~\ref{tab:evidence} states what each supports and what it
-does not; only the three benchmarks compare decision rules, and only the Jev benchmark and the
-mechanism experiment use a real judge.
+We report eleven kinds of evidence. Table~\ref{tab:evidence} states what each supports and what it
+does not; five of them compare decision rules, and five use a real judge.
 
 \begin{table}[h]
 \centering\small
@@ -699,6 +709,12 @@ working mechanism or the wording, on templated options & behaviour on real, unte
 sequential benchmark (\S\ref{sec:mechbench}) & what learning per principle and the innovation
 slot do over a programme of related decisions, in a simulated world & that real principles behave
 like the simulated ones \\
+disguise test (\S\ref{sec:disguise}) & how far jargon and mundane wording move a real judge's
+novelty and classification & behaviour on untemplated text \\
+robustness sweep (\S\ref{sec:robust}) & which assumptions the learning gain depends on & the
+values those assumptions take in practice \\
+Jev in the loop (\S\ref{sec:jevloop}) & which component of the layer improves sequential decisions
+when the judgments about mechanisms are real & real outcomes, which are simulated \\
 \bottomrule
 \end{tabular}
 \caption{Evidence and its limits.}
@@ -709,7 +725,7 @@ like the simulated ones \\
 
 Every numbered claim has a property-based test (Hypothesis); L4/L5 also have a brute-force oracle
 over joint outcomes, and \texttt{MATH.md} maps claims to tests. The gate runs \texttt{ruff},
-\texttt{mypy --strict} and \texttt{pytest} with a 90\% branch-coverage floor. \textbf{110 tests pass
+\texttt{mypy --strict} and \texttt{pytest} with a 90\% branch-coverage floor. \textbf{112 tests pass
 at 99\% branch coverage}, plus one live test against the Jev API.
 
 Testing and derivation found real defects, which we list because they bear on how much a passing
@@ -1023,6 +1039,61 @@ wrappers are two fixed sentences, and the classifications are easy by design bec
 catalogue entry is described in words close to the option's. Real options are messier, and
 classification accuracy must be measured per domain.
 
+\subsection{Jargon and mundane wording: a disguise test (Jev)}\label{sec:disguise}
+
+\paragraph{Wordings that leave the mechanism unchanged.} Hype adds claims of novelty around an
+unchanged sentence. A harder test changes the words themselves. The same 28 mechanisms were written
+twice more: in \emph{jargon}, technical vocabulary that makes the mechanism sound new without changing
+it (``deploy a field activation squad that runs hands-on product immersion sessions inside each
+shop'' for staff visiting shops; ``off-grid photovoltaic refrigeration unit'' for a solar fridge), and,
+for the 20 new mechanisms, in \emph{mundane} words that make them sound ordinary (``small flying
+delivery machines'' for drones; ``a clay pot set inside a bigger pot with wet sand between'' for an
+evaporative cooler). Jargon on a repeated mechanism is the case where a novelty score could admit an
+old idea to the innovation slot; mundane wording of a new mechanism is the case where it could exclude
+a new one. All 104 options (plain, hype, jargon, mundane) were asked again in one run.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+change from plain wording & $n$ & judged novelty & mechanism novelty $\nu$ & mechanism risk \\
+\midrule
+hype, all mechanisms & 28 & $+0.055$ [$0.034,0.078$] & $+0.003$ [$-0.005,0.013$] & $+0.036$ [$0.021,0.051$] \\
+jargon, repeated mechanisms & 8 & $+0.096$ [$0.053,0.136$] & $+0.043$ [$0.011,0.083$] & $+0.028$ [$0.004,0.058$] \\
+jargon, new mechanisms & 20 & $+0.049$ [$0.036,0.062$] & $+0.031$ [$-0.002,0.064$] & $+0.047$ [$0.010,0.085$] \\
+mundane, new mechanisms & 20 & $+0.007$ [$-0.005,0.018$] & $+0.016$ [$0.001,0.039$] & $+0.044$ [$0.011,0.084$] \\
+\bottomrule
+\end{tabular}
+\caption{Disguise test on Jev: paired changes from the plain wording of the same mechanism
+(bootstrap 95\% intervals).}
+\label{tab:disguise}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\linewidth]{paper_figs/fig_mech_disguise}
+\caption{Disguise test: change in each novelty measure when the same mechanism is reworded.}
+\label{fig:disguise}
+\end{figure}
+
+\paragraph{Shifts, admissions and the gate.} (1) \emph{The hype result replicates}: in this
+independent run hype moved the judged novelty by $0.055$ and $\nu$ by $0.003$. (2) \emph{Jargon moves
+both measures, the judged one about twice as much.} On repeated mechanisms jargon raised the judged
+novelty from $0.08$ to $0.18$ and $\nu$ from $0.05$ to $0.10$. $\nu$ moves because classification
+gets harder: the true principle is modal in $95\%$ of jargon cells, against $98$--$100\%$ under the
+other wordings. (3) \emph{Mundane wording did not lower either measure.} (4) \emph{No wording changed
+an admission} at the default gates: no repeated mechanism reached $0.25$ on either measure under any
+wording, and every new mechanism did (precision and recall $1.0$; AUROC $1.0$ for both measures). The
+judged novelty's error against the truth was $0.128$, $\nu$'s $0.054$. At a gate of $0.5$, $\nu$
+admitted $56\%$ of new mechanisms against $86\%$ for the judged score, which is why the gate on $\nu$ is
+now the midpoint rule of \S\ref{sec:mechanism}. (5) \emph{Every rewording raised Jev's failure
+estimate}, by $0.03$ to $0.05$: unfamiliar phrasing, promotional or plain, reads as riskier.
+
+On these options Jev was harder to mislead than expected: the judged novelty shifts with wording,
+but not by enough to cross a gate. The case for $\nu$ therefore rests less on preventing admission
+errors than on calibration (less than half the error), on smaller wording shifts, and on naming the
+principle, which is what makes the learning below possible.
+
 \subsection{Sequential benchmark: learning per principle and the innovation slot}\label{sec:mechbench}
 
 \paragraph{Simulated programme and policies.} The previous benchmarks score one decision at a time and leave the innovation
@@ -1103,6 +1174,95 @@ $w=1$), so its default stays $0$. \emph{Caveats:} the world shares the model's s
 payoffs are in expectation; the benchmark shows when per-principle learning and an innovation pilot
 can pay, not that they do on real programmes.
 
+\subsection{Where learning per principle stops paying}\label{sec:robust}
+
+\paragraph{Assumptions varied one at a time.} The sequential benchmark assumes that the judge
+classifies principles correctly $95\%$ of the time, that principles do not interact, and that each
+untested principle is shared by many options. Starting from its ordinary setting ($B=0.5$,
+$\varepsilon=0.05$, $T=24$) we vary each in turn over 200 worlds: the probability that the judge's
+modal classification is correct, from $0.5$ to $1$ (with misclassification, test results are
+recorded against the wrong principle); the probability that two untested principles fail together
+although each works, from $0$ to $0.5$ (the failure is then recorded against both principles); and the
+number of untested principles per function, from 1 to 12 (fewer options share each one).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{paper_figs/fig_mech_robust}
+\caption{Paired regret reduction from learning per principle (blue) and from a small innovation
+pilot with learning against committing alone (yellow), as one assumption of the sequential benchmark
+varies. Bands are 95\% intervals over 200 simulated worlds.}
+\label{fig:robust}
+\end{figure}
+
+\paragraph{Classification accuracy is the binding assumption.} Learning per principle pays while
+the judge's classifications are informative and fades as they approach chance
+(Figure~\ref{fig:robust}): its regret reduction is $0.0117$ $[0.0101,0.0133]$ with perfect
+classification, $0.0076$ $[0.0060,0.0091]$ at $0.95$, $0.0033$ $[0.0016,0.0050]$ at $0.7$, and
+$0.0010$ $[-0.0006,0.0025]$ at $0.5$. Interactions between principles barely matter: even when half of
+all combinations of two untested principles fail together and the failure is blamed on both, the
+gain is $0.0064$ $[0.0051,0.0077]$. Sharing matters less than expected: with one untested principle per
+function the gain is $0.0053$, and with twelve, where each principle appears in few options, it is
+still $0.0058$. Jev's measured classification accuracy ($95$--$100\%$, \S\ref{sec:disguise}) puts it in
+the region where learning pays. The small innovation pilot's gain over committing alone stays
+between $0$ and $0.002$ everywhere: its interval excludes zero at classification accuracies $0.5$,
+$0.7$, $0.85$ and $1$ (e.g.\ $0.0018$ $[0.0004,0.0033]$ at $0.7$) and includes it at the default $0.95$ and
+in every interaction and sharing setting. A small pilot is therefore cheap, but its benefit is at the
+edge of what 200 worlds can resolve.
+
+\subsection{Jev in the loop: which part of the layer improves decisions}\label{sec:jevloop}
+
+\paragraph{Real judgments, simulated outcomes.} The two previous benchmarks simulate the judge. Here
+every judgment about mechanisms is Jev's answer for the exact text of the option: the 104 options of
+\S\ref{sec:disguise} supply the classification $\pi$, the failure estimates $r$ and the judged novelty,
+so the same mechanism reappears under hype, jargon or mundane words with whatever classification Jev
+gave it. What Jev cannot know is simulated as in \S\ref{sec:mechbench}: whether each principle works
+($\theta\sim\mathrm{Beta}(1,1)$ for principles no precedent used, each \textsc{new} principle included;
+$0.95$ for those precedents used), each mechanism's value if it works (the same for every wording),
+and noisy value beliefs. Each of 24 decisions offers the status quo and five of the six other
+mechanisms in random wordings ($B=0.5$, $\varepsilon=0.05$; 300 worlds for each of the four problems).
+The comparison is with \emph{v0.2}: judged novelty and a mechanism check built from Jev's $r$ alone
+($q=1-\prod_f(1-r_f)$), with no record and no shared beliefs. Two ablations remove the settled rule,
+keeping the record only for novelty.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+policy & regret ($\pm$se) & harm & bad (late) & gain vs.\ v0.2 [95\% CI] \\
+\midrule
+v0.2 & $0.0742\pm0.0019$ & 3.3\% & 0.18 & --- \\
+veto untested principles & $0.1175\pm0.0022$ & 3.8\% & 0.02 & $-0.0433$ [$-0.0472,-0.0393$] \\
+v0.3 without settled rule, no learning & $0.0745\pm0.0019$ & 3.3\% & 0.18 & $-0.0003$ [$-0.0003,-0.0002$] \\
+v0.3 without settled rule, learning & $0.0607\pm0.0018$ & 2.6\% & 0.10 & $+0.0135$ [$0.0112,0.0158$] \\
+v0.3, no learning & $0.0489\pm0.0013$ & 5.3\% & 0.24 & $+0.0253$ [$0.0228,0.0279$] \\
+v0.3, learning & $0.0370\pm0.0011$ & 5.0\% & 0.13 & $+0.0372$ [$0.0340,0.0405$] \\
+v0.3, commit only & $0.0374\pm0.0012$ & 5.0\% & 0.15 & $+0.0369$ [$0.0336,0.0401$] \\
+\bottomrule
+\end{tabular}
+\caption{Sequential decisions on Jev's real mechanism judgments (1200 simulated worlds; paired
+intervals). ``Bad (late)'': share of the last eight commitments that use a principle with
+$\theta<0.3$.}
+\label{tab:jevloop}
+\end{table}
+
+\paragraph{The gain comes from evidence, not from the novelty measure.} The full layer lowers regret
+against v0.2 by $0.037$ $[0.034,0.041]$, half of v0.2's regret, and the gain holds in each of the four
+problems. Table~\ref{tab:jevloop} splits it. (1) \emph{Replacing the judged novelty by $\nu$ changes
+nothing}: with the settled rule and learning removed, v0.3 and v0.2 differ by $0.0003$. (2) \emph{Using
+precedents as evidence} (the settled rule) gives $0.026$ $[0.023,0.028]$, but it raises harm from
+$3.3\%$ to $5.3\%$: it deploys mechanisms built on precedents' principles without a check, and in this
+simulation those principles still fail $5\%$ of the time. (3) \emph{Learning per principle} gives
+$0.012$ $[0.010,0.014]$ on top of the settled rule, and $0.014$ $[0.011,0.016]$ without it, where it
+also lowers harm from $3.3\%$ to $2.6\%$ and halves late commitments to unreliable principles. (4)
+\emph{The innovation pilot adds nothing measurable}: $0.0004$ $[-0.0006,0.0013]$ against committing
+alone. (5) Vetoing every untested principle is the worst policy. The mechanism layer is useful here
+because it names principles, which lets evidence from precedents and from tests attach to them; the
+novelty score it computes is, on Jev's judgments, no better a guide than Jev's own. Whether to apply
+the settled rule is a trade between regret and harm that depends on how reliable precedents' principles
+really are; where that is in doubt, record them as evidence instead, which keeps the learning gain
+and the lower harm.
+
+
 \subsection{Bias recovery}\label{sec:biasrec}
 
 An audit of Jev reported Choice and Score questions as overconfident ($T\approx1.3$), Noul as
@@ -1172,9 +1332,10 @@ conditions we now state: the check must be informative enough to pay for itself
 chosen with that pricing in view. In both benchmarks the benefit came from checking uncertain
 options; the CVaR reliability gate added nothing measurable, and whether it earns its place is an
 open question. The mechanism layer makes novelty a property of a design's working principles
-rather than its wording, which a real judge can supply reliably, and turns each prototype test into
-evidence about every option that shares the principle; in simulation that learning pays in every
-setting, while a separate innovation pilot pays only when it is small. The math is derived and
+rather than its wording, which a real judge can supply reliably, and turns precedents and prototype
+tests into evidence about every option that shares a principle. On Jev's real judgments that
+evidence, not the novelty score, is what improves decisions: it halves regret against v0.2, and the
+learning part of it pays as long as the judge classifies principles better than chance. The math is derived and
 tested; whether the policy makes better real decisions remains to be measured.
 
 \paragraph{Reproducibility.} Source, tests and the configuration behind every number here:
@@ -1185,8 +1346,10 @@ from source with \texttt{uv sync}; the name \texttt{cdm} on PyPI belongs to an u
 \item \texttt{uv run python scripts/experiments.py}: the benchmark and sweeps (fixed seed);
 \item \texttt{uv run python scripts/jev\_benchmark.py collect}: the Jev benchmark's API calls (needs
 \texttt{TYPESAFE\_API\_KEY}); \texttt{analyze} reruns the analysis offline from the cached answers;
-\item \texttt{scripts/mechanism\_jev.py collect} (needs the key) and \texttt{analyze}: the
-mechanism-versus-wording test; \texttt{scripts/mechanism\_benchmark.py}: the sequential benchmark;
+\item \texttt{mechanism\_jev.py} and \texttt{mechanism\_disguise.py} in \texttt{scripts/}
+(\texttt{collect} needs the key; \texttt{analyze} is offline): the wording tests;
+\item \texttt{mechanism\_benchmark.py}, \texttt{mechanism\_robustness.py} and
+\texttt{mechanism\_jevloop.py} (run with \texttt{PYTHONPATH=scripts}): the sequential experiments;
 \item \texttt{uv run python scripts/figures.py}: every figure, and \texttt{scripts/verify\_figures.py}
 cross-checks every number quoted from them;
 \item \texttt{uv run python demo.py}: the live example (needs \texttt{TYPESAFE\_API\_KEY}; it falls

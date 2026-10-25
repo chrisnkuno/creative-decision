@@ -51,7 +51,7 @@ from cdm.simplex import closure
 
 OUT = Path("paper_figs/mechanism_benchmark.json")
 SEED = 20261026
-RUNS = int(sys.argv[1]) if len(sys.argv) > 1 else 300
+RUNS = 300  # worlds per setting; `main` takes another count as its first argument
 SENS, SPEC, COST, HARM = 0.9, 0.95, 0.01, 0.0
 # (status-quo value, pilot share ε, number of decisions T)
 GRID = [(0.5, 0.2, 24), (0.5, 0.05, 24), (0.65, 0.2, 24), (0.65, 0.05, 24), (0.65, 0.05, 48)]
@@ -59,12 +59,24 @@ P_TRUE_CLASS = 0.87
 HYPE_EFFECT, NOV_NOISE = 0.06, 0.10
 LEVELS = ("1", "2", "3", "4", "5")
 VALUES = np.linspace(0, 1, 5)
-FAMILIAR, UNTESTED = ("f1", "f2"), ("u1", "u2", "u3")
+FAMILIAR = ("f1", "f2")
+# Knobs varied by scripts/mechanism_robustness.py; these defaults give the paper's benchmark.
+CFG: dict[str, object] = {
+    "untested": ("u1", "u2", "u3"),  # untested principles per function
+    "p_correct": 0.95,  # P(the judge's modal classification is the true principle)
+    "interact": 0.0,  # P(two untested principles fail together although each works)
+}
+
+
+def untested() -> tuple[str, ...]:
+    return CFG["untested"]  # type: ignore[return-value]
+
+
 TAU = 0.2
 
 
 def functions() -> list[Function]:
-    names = (*FAMILIAR, *UNTESTED)
+    names = (*FAMILIAR, *untested())
     return [Function(fid, fid, {p: p for p in names}) for fid in ("a", "b")]
 
 
@@ -97,14 +109,18 @@ def draw_world(rng: np.random.Generator) -> World:
     for f in ("a", "b"):
         for p in FAMILIAR:
             theta[(f, p)], mu[(f, p)] = 0.95, float(rng.uniform(0.4, 0.6))
-        for p in UNTESTED:
+        for p in untested():
             theta[(f, p)], mu[(f, p)] = float(rng.beta(1, 1)), float(rng.uniform(0.3, 0.9))
     return World(theta, mu)
 
 
 def classify(rng: np.random.Generator, true: str, labels: tuple[str, ...]) -> np.ndarray:
     v = np.full(len(labels), (1 - P_TRUE_CLASS) / (len(labels) - 1))
-    shown = true if rng.random() < 0.95 else str(rng.choice([x for x in labels if x != true]))
+    shown = (
+        true
+        if rng.random() < CFG["p_correct"]
+        else str(rng.choice([x for x in labels if x != true]))
+    )
     v[labels.index(shown)] = P_TRUE_CLASS
     return v
 
@@ -118,7 +134,7 @@ def draw_decision(
     out = [base]
     for _ in range(5):
         choice = {
-            f: (str(rng.choice(FAMILIAR)) if rng.random() < 0.4 else str(rng.choice(UNTESTED)))
+            f: (str(rng.choice(FAMILIAR)) if rng.random() < 0.4 else str(rng.choice(untested())))
             for f in ("a", "b")
         }
         value = float(np.clip(np.mean([w.mu[(f, p)] for f, p in choice.items()]), 0, 1))
@@ -127,7 +143,7 @@ def draw_decision(
         judged = temper(noisy, 1 / 1.3)
         pi = {f.id: classify(rng, choice[f.id], f.labels()) for f in funcs}
         risk = {f: float(rng.uniform(0.3, 0.6)) for f in ("a", "b")}
-        nu_true = float(np.mean([p in UNTESTED for p in choice.values()]))
+        nu_true = float(np.mean([p in untested() for p in choice.values()]))
         hype = rng.random() < 0.5
         nov = float(np.clip(nu_true + HYPE_EFFECT * hype + rng.normal(0, NOV_NOISE), 0, 1))
         out.append(Cand(choice, value, judged, pi, risk, nov))
@@ -174,7 +190,10 @@ SPECS = [
 
 
 def works(w: World, choice: dict[str, str]) -> float:
-    return float(np.prod([w.theta[(f, p)] for f, p in choice.items()]))
+    ok = float(np.prod([w.theta[(f, p)] for f, p in choice.items()]))
+    if all(p in untested() for p in choice.values()):
+        ok *= 1 - float(CFG["interact"])  # type: ignore[arg-type]
+    return ok
 
 
 def expected(w: World, c: Cand, b: float, *, checked: bool) -> tuple[float, float]:
@@ -227,14 +246,24 @@ def choose(spec: Spec, cands: list[Cand], m: Morphology) -> tuple[int, bool, int
 
 
 def observe(
-    m: Morphology, c: Cand, z: dict[tuple[str, str], bool], u: dict[str, float], *, checked: bool
+    m: Morphology,
+    c: Cand,
+    z: dict[tuple[str, str], bool],
+    u: dict[str, float],
+    *,
+    checked: bool,
+    clash: bool = False,
 ) -> None:
-    """Update beliefs about the principles the judge says c uses (modal classification)."""
+    """Update beliefs about the principles the judge says c uses (modal classification).
+
+    `clash`: the two principles failed together (an interaction), so every part reads as failed
+    and the failure is misattributed to the principles.
+    """
     for f in m.functions:
         p = f.labels()[int(np.argmax(c.pi[f.id]))]
         if p == NEW or m.settled(f.id, p):
             continue  # NEW is option-specific; settled principles are in fact reliable
-        works_here = z[(f.id, c.choice[f.id])]
+        works_here = z[(f.id, c.choice[f.id])] and not clash
         if checked:
             passed = (u[f.id] < SPEC) if works_here else (u[f.id] >= SENS)
             m.update(f.id, p, passed=passed, sens=SENS, spec=SPEC)
@@ -242,12 +271,16 @@ def observe(
             m.update(f.id, p, passed=works_here)
 
 
-def run(base_value: float, eps: float, T: int) -> dict[str, object]:
+def run(
+    base_value: float, eps: float, T: int, runs: int = RUNS, specs: list[Spec] | None = None
+) -> dict[str, object]:
+    specs = specs or SPECS
     rng = np.random.default_rng(SEED)  # the same worlds for every configuration
+    irng = np.random.default_rng(SEED + 1)  # interaction draws, kept off the main stream
     funcs = functions()
     keys = ("regret", "harm", "good", "bad", "innovates")
-    per = {s.name: {k: np.zeros((RUNS, T)) for k in keys} for s in SPECS}
-    for r in range(RUNS):
+    per = {s.name: {k: np.zeros((runs, T)) for k in keys} for s in specs}
+    for r in range(runs):
         w = draw_world(rng)
         decisions = [draw_decision(rng, w, funcs, base_value) for _ in range(T)]
         zs = [
@@ -255,9 +288,19 @@ def run(base_value: float, eps: float, T: int) -> dict[str, object]:
             for _ in range(T)
         ]
         us = [[{f: float(rng.random()) for f in ("a", "b")} for _ in range(6)] for _ in range(T)]
-        good = {k for k, th in w.theta.items() if k[1] in UNTESTED and th >= 0.7 and w.mu[k] >= 0.6}
-        bad = {k for k, th in w.theta.items() if k[1] in UNTESTED and th < 0.3}
-        for spec in SPECS:
+        clash = [
+            [
+                bool(irng.random() < float(CFG["interact"]))  # type: ignore[arg-type]
+                and all(p in untested() for p in c.choice.values())
+                for c in cands
+            ]
+            for cands in decisions
+        ]
+        good = {
+            k for k, th in w.theta.items() if k[1] in untested() and th >= 0.7 and w.mu[k] >= 0.6
+        }
+        bad = {k for k, th in w.theta.items() if k[1] in untested() and th < 0.3}
+        for spec in specs:
             m = Morphology(funcs, [dict(x) for x in RECORD])
             rec = per[spec.name]
             for t, cands in enumerate(decisions):
@@ -275,23 +318,27 @@ def run(base_value: float, eps: float, T: int) -> dict[str, object]:
                     rec["bad"][r, t] = bool(used & bad)
                 if spec.learn:
                     if not cands[ci].baseline:
-                        observe(m, cands[ci], zs[t][ci], us[t][ci], checked=checked)
+                        observe(
+                            m, cands[ci], zs[t][ci], us[t][ci], checked=checked, clash=clash[t][ci]
+                        )
                     if ii is not None:
-                        observe(m, cands[ii], zs[t][ii], us[t][ii], checked=True)
+                        observe(
+                            m, cands[ii], zs[t][ii], us[t][ii], checked=True, clash=clash[t][ii]
+                        )
         if (r + 1) % 100 == 0:
-            print(f"  B={base_value} ε={eps} T={T}: {r + 1}/{RUNS} runs", file=sys.stderr)
+            print(f"  B={base_value} ε={eps} T={T}: {r + 1}/{runs} runs", file=sys.stderr)
 
     ref = per["mechanism novelty, no learning"]["regret"].mean(axis=1)
     ref_commit = per["commit only, learning"]["regret"].mean(axis=1)
     rows = {}
-    for s in SPECS:
+    for s in specs:
         rec = per[s.name]
         mean_run = rec["regret"].mean(axis=1)
         diff = ref - mean_run
-        half = 1.96 * diff.std(ddof=1) / np.sqrt(RUNS)
+        half = 1.96 * diff.std(ddof=1) / np.sqrt(runs)
         rows[s.name] = {
             "regret": float(mean_run.mean()),
-            "regret_se": float(mean_run.std(ddof=1) / np.sqrt(RUNS)),
+            "regret_se": float(mean_run.std(ddof=1) / np.sqrt(runs)),
             "regret_first8": float(rec["regret"][:, :8].mean()),
             "regret_last8": float(rec["regret"][:, -8:].mean()),
             "harm": float(rec["harm"].mean()),
@@ -314,14 +361,15 @@ def _half(x: np.ndarray) -> float:
     return float(1.96 * x.std(ddof=1) / np.sqrt(x.size))
 
 
-def _run(cfg: tuple[float, float, int]) -> dict[str, object]:
+def _run(cfg: tuple[float, float, int, int]) -> dict[str, object]:
     return run(*cfg)
 
 
 def main() -> None:
+    runs = int(sys.argv[1]) if len(sys.argv) > 1 else RUNS
     with ProcessPoolExecutor(max_workers=len(GRID)) as pool:
-        results = list(pool.map(_run, GRID))
-    OUT.write_text(json.dumps({"runs": RUNS, "seed": SEED, "grid": results}, indent=1))
+        results = list(pool.map(_run, [(*g, runs) for g in GRID]))
+    OUT.write_text(json.dumps({"runs": runs, "seed": SEED, "grid": results}, indent=1))
     for res in results:
         print(f"\n== status quo {res['base_value']}, pilot share {res['eps']}, T = {res['T']}")
         for name, r in res["policies"].items():  # type: ignore[union-attr]
